@@ -1,6 +1,6 @@
-// --- METROSTACK ENGINE ---
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
 const uiOverlay = document.getElementById("uiOverlay");
 
 const uiScore = document.getElementById("score");
@@ -225,28 +225,26 @@ function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
     const topColor = color;
-    const sideColor = shadeColor(color, -45);
-    const frontColor = shadeColor(color, -70);
+    const sideColor = shadeColor(color, -38);
+    const faceColor = shadeColor(color, -70);
 
     ctx.save();
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 18;
+    ctx.shadowBlur = 0;
     ctx.fillStyle = topColor;
     ctx.fillRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
 
-    ctx.shadowBlur = 0;
     ctx.fillStyle = sideColor;
     ctx.fillRect(px + BLOCK_SIZE - 6, py + 4, 4, BLOCK_SIZE - 8);
     ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
 
-    ctx.fillStyle = frontColor;
+    ctx.fillStyle = faceColor;
     ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
 
-    ctx.fillStyle = "rgba(255,255,255,0.48)";
+    ctx.fillStyle = "rgba(255,255,255,0.42)";
     ctx.fillRect(px + 5, py + 5, BLOCK_SIZE - 12, 6);
 
-    ctx.strokeStyle = "rgba(255,255,255,0.7)";
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = "rgba(255,255,255,0.8)";
+    ctx.lineWidth = 1.2;
     ctx.strokeRect(px + 2.5, py + 2.5, BLOCK_SIZE - 5, BLOCK_SIZE - 5);
     ctx.restore();
 }

@@ -5,25 +5,39 @@
     user-select: none;
 }
 
+:root {
+    --bg-night: #090d16;
+    --bg-violet: #1d1138;
+    --panel-bg: rgba(13, 18, 36, 0.9);
+    --panel-border: rgba(126, 249, 255, 0.9);
+    --cyan: #7ef9ff;
+    --pink: #ff4fd8;
+    --yellow: #ffe66d;
+    --lime: #7dff7a;
+    --blue: #71d6ff;
+    --orange: #ff9f43;
+    --red: #ff5d73;
+}
+
 body {
-    background: #090d16;
+    background: radial-gradient(circle at top, #301c5d 0%, var(--bg-violet) 22%, var(--bg-night) 60%, #020617 100%);
     color: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     overflow: hidden;
 }
 
 #gameContainer {
     display: flex;
     gap: 25px;
-    background: rgba(15, 23, 42, 0.95);
-    border: 2px solid #00f0ff;
+    background: linear-gradient(135deg, rgba(18, 25, 52, 0.98), rgba(6, 11, 27, 0.96));
+    border: 2px solid var(--panel-border);
     padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 0 50px rgba(0, 240, 255, 0.25);
+    border-radius: 22px;
+    box-shadow: 0 0 25px rgba(126, 249, 255, 0.35), 0 0 60px rgba(255, 79, 216, 0.15);
 }
 
 #sidebarLeft {
@@ -34,51 +48,57 @@ body {
 }
 
 .panel {
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid #38bdf8;
+    background: rgba(10, 15, 29, 0.7);
+    border: 1px solid rgba(113, 214, 255, 0.8);
     padding: 15px;
-    border-radius: 12px;
+    border-radius: 14px;
+    box-shadow: inset 0 0 12px rgba(126, 249, 255, 0.15), 0 0 18px rgba(126, 249, 255, 0.08);
 }
 
 .panel h2 {
-    color: #00f0ff;
+    color: var(--cyan);
     font-size: 20px;
-    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+    letter-spacing: 1px;
+    text-shadow: 0 0 12px rgba(126, 249, 255, 0.8), 0 0 28px rgba(126, 249, 255, 0.55);
 }
 
 .subtitle {
-    color: #ff007f;
+    color: var(--pink);
     font-size: 11px;
-    font-weight: bold;
+    font-weight: 800;
     letter-spacing: 2px;
-    margin-top: 2px;
+    margin-top: 4px;
+    text-shadow: 0 0 10px rgba(255, 79, 216, 0.8);
 }
 
 .statLabel {
     font-size: 11px;
-    color: #94a3b8;
-    letter-spacing: 1px;
+    color: #cfe5ff;
+    letter-spacing: 1.5px;
     margin-bottom: 5px;
+    opacity: 0.9;
 }
 
 .statValue {
     font-size: 24px;
-    font-weight: bold;
-    color: #facc15;
-    font-family: monospace;
+    font-weight: 800;
+    color: var(--yellow);
+    font-family: "SFMono-Regular", Consolas, monospace;
+    text-shadow: 0 0 10px rgba(255, 230, 109, 0.7);
 }
 
 #canvasWrapper {
     position: relative;
-    border: 3px solid #38bdf8;
-    border-radius: 10px;
+    border: 3px solid rgba(126, 249, 255, 0.9);
+    border-radius: 12px;
     overflow: hidden;
-    background: #020617;
-    box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.2);
+    background: linear-gradient(180deg, rgba(7, 11, 22, 1), rgba(2, 6, 23, 1));
+    box-shadow: inset 0 0 18px rgba(126, 249, 255, 0.18), 0 0 20px rgba(126, 249, 255, 0.18);
 }
 
 canvas {
     display: block;
+    background: linear-gradient(180deg, rgba(8, 14, 30, 1), rgba(2, 6, 20, 1));
 }
 
 #uiOverlay {
@@ -90,22 +110,25 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(2, 6, 23, 0.85);
+    background: rgba(2, 6, 23, 0.7);
+    backdrop-filter: blur(2px);
 }
 
 .menuBtn {
-    background: linear-gradient(45deg, #00f0ff, #38bdf8);
-    color: #000;
+    background: linear-gradient(135deg, var(--cyan), var(--blue), var(--pink));
+    color: #03111d;
     border: none;
     padding: 15px 30px;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 900;
+    letter-spacing: 1px;
     border-radius: 12px;
     cursor: pointer;
-    box-shadow: 0 0 15px #00f0ff;
-    transition: transform 0.1s ease;
+    box-shadow: 0 0 18px rgba(126, 249, 255, 0.75), 0 0 28px rgba(255, 79, 216, 0.35);
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
 }
 
 .menuBtn:hover {
     transform: scale(1.05);
+    box-shadow: 0 0 24px rgba(126, 249, 255, 0.9), 0 0 36px rgba(255, 79, 216, 0.45);
 }

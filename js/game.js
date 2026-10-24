@@ -20,15 +20,15 @@ let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
-// Tetromino Shapes & Colors (Quantum Vibe)
+// Tetromino Shapes & Colors (Ultra-bright neon arcade)
 const SHAPES = [
-    { shape: [[1, 1, 1, 1]], color: "#67E8F9" }, // I - Long Quantum
-    { shape: [[1, 1], [1, 1]], color: "#FDE047" }, // O - Speaker Stack
-    { shape: [[0, 1, 0], [1, 1, 1]], color: "#C084FC" }, // T - Rank Junction
-    { shape: [[1, 1, 0], [0, 1, 1]], color: "#FB7185" }, // Z - Sharp Curve
-    { shape: [[0, 1, 1], [1, 1, 0]], color: "#4ADE80" }, // S - Smooth Route
-    { shape: [[1, 0, 0], [1, 1, 1]], color: "#7DD3FC" }, // L - Mini-bus L
-    { shape: [[0, 0, 1], [1, 1, 1]], color: "#FDBA74" }  // J - Mini-bus J
+    { shape: [[1, 1, 1, 1]], color: "#6EF8FF" }, // I - Long Quantum
+    { shape: [[1, 1], [1, 1]], color: "#FFE75A" }, // O - Speaker Stack
+    { shape: [[0, 1, 0], [1, 1, 1]], color: "#FF78F0" }, // T - Rank Junction
+    { shape: [[1, 1, 0], [0, 1, 1]], color: "#FF5A85" }, // Z - Sharp Curve
+    { shape: [[0, 1, 1], [1, 1, 0]], color: "#7CFF9A" }, // S - Smooth Route
+    { shape: [[1, 0, 0], [1, 1, 1]], color: "#78D8FF" }, // L - Mini-bus L
+    { shape: [[0, 0, 1], [1, 1, 1]], color: "#FFB14A" }  // J - Mini-bus J
 ];
 
 let player = {
@@ -117,8 +117,7 @@ function playerMove(dir) {
 function playerRotate() {
     const prevX = player.pos.x;
     let offset = 1;
-    
-    // Rotate matrix
+
     const m = player.matrix;
     for (let y = 0; y < m.length; ++y) {
         for (let x = 0; x < y; ++x) {
@@ -131,7 +130,6 @@ function playerRotate() {
         player.pos.x += offset;
         offset = -(offset + (offset > 0 ? 1 : -1));
         if (offset > m[0].length) {
-            // Undo rotation if no room
             m.forEach(row => row.reverse());
             for (let y = 0; y < m.length; ++y) {
                 for (let x = 0; x < y; ++x) {
@@ -148,31 +146,34 @@ function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
 
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 18;
     ctx.fillStyle = color;
-    ctx.fillRect(px, py, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+    ctx.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 
-    ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
-    ctx.fillRect(px + 2, py + 2, BLOCK_SIZE - 6, 6);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(255,255,255,0.42)";
+    ctx.fillRect(px + 3, py + 3, BLOCK_SIZE - 7, 6);
 
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
-    ctx.lineWidth = 1.2;
-    ctx.strokeRect(px + 0.5, py + 0.5, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+    ctx.strokeStyle = "rgba(255,255,255,0.7)";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(px + 1.2, py + 1.2, BLOCK_SIZE - 3, BLOCK_SIZE - 3);
+    ctx.restore();
 }
 
 function draw() {
-    ctx.fillStyle = "#070d19";
+    ctx.fillStyle = "#060d1b";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw Grid Stack
-    grid.forEach((row, r) => {
-        row.forEach((color, c) => {
-            if (color !== 0) {
-                drawBlock(c, r, color);
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            if (grid[r][c] !== 0) {
+                drawBlock(c, r, grid[r][c]);
             }
-        });
-    });
+        }
+    }
 
-    // Draw Active Piece
     if (!gameOver && player.matrix) {
         player.matrix.forEach((row, r) => {
             row.forEach((value, c) => {
@@ -207,7 +208,7 @@ function showStartScreen() {
 function showGameOverScreen() {
     uiOverlay.innerHTML = `
         <div style="text-align: center;">
-            <h2 style="color: #ef4444; font-size: 22px; margin-bottom: 15px;">ROUTE BLOCKED!</h2>
+            <h2 style="color: #ff6b9a; font-size: 22px; margin-bottom: 15px;">ROUTE BLOCKED!</h2>
             <button class="menuBtn" id="restartBtn">TRY AGAIN</button>
         </div>
     `;

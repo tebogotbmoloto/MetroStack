@@ -3,33 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroStack - SA Arcade Tetris</title>
+    <title>MetroStack - Quantum Edition</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div id="gameContainer">
-        <div id="sidebarLeft">
-            <div class="panel">
+        <aside id="sidebarLeft">
+            <div class="panel titlePanel">
                 <h2>METROSTACK</h2>
                 <p class="subtitle">QUANTUM EDITION</p>
             </div>
+
             <div class="panel">
                 <div class="statLabel">FARES EARNED</div>
                 <div class="statValue" id="score">R 0</div>
             </div>
+
             <div class="panel">
                 <div class="statLabel">ROUTE LEVEL</div>
                 <div class="statValue" id="level">1</div>
             </div>
+
             <div class="panel">
                 <div class="statLabel">TRIPS CLEARED</div>
                 <div class="statValue" id="lines">0</div>
             </div>
-        </div>
+        </aside>
 
         <div id="canvasWrapper">
             <canvas id="gameCanvas" width="300" height="600"></canvas>
-            <div id="uiOverlay"></div>
+            <div id="uiOverlay" class="visible">
+                <div class="overlayCard">
+                    <h1>METROSTACK</h1>
+                    <p>QUANTUM EDITION</p>
+                    <button id="startBtn">START ROUTE</button>
+                </div>
+            </div>
         </div>
     </div>
 

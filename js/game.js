@@ -22,13 +22,13 @@ let lastTime = 0;
 
 // Tetromino Shapes & Colors (Quantum Vibe)
 const SHAPES = [
-    { shape: [[1, 1, 1, 1]], color: "#00f0ff" }, // I - Long Quantum
-    { shape: [[1, 1], [1, 1]], color: "#facc15" }, // O - Speaker Stack
-    { shape: [[0, 1, 0], [1, 1, 1]], color: "#a855f7" }, // T - Rank Junction
-    { shape: [[1, 1, 0], [0, 1, 1]], color: "#ef4444" }, // Z - Sharp Curve
-    { shape: [[0, 1, 1], [1, 1, 0]], color: "#22c55e" }, // S - Smooth Route
-    { shape: [[1, 0, 0], [1, 1, 1]], color: "#38bdf8" }, // L - Mini-bus L
-    { shape: [[0, 0, 1], [1, 1, 1]], color: "#f97316" }  // J - Mini-bus J
+    { shape: [[1, 1, 1, 1]], color: "#67E8F9" }, // I - Long Quantum
+    { shape: [[1, 1], [1, 1]], color: "#FDE047" }, // O - Speaker Stack
+    { shape: [[0, 1, 0], [1, 1, 1]], color: "#C084FC" }, // T - Rank Junction
+    { shape: [[1, 1, 0], [0, 1, 1]], color: "#FB7185" }, // Z - Sharp Curve
+    { shape: [[0, 1, 1], [1, 1, 0]], color: "#4ADE80" }, // S - Smooth Route
+    { shape: [[1, 0, 0], [1, 1, 1]], color: "#7DD3FC" }, // L - Mini-bus L
+    { shape: [[0, 0, 1], [1, 1, 1]], color: "#FDBA74" }  // J - Mini-bus J
 ];
 
 let player = {
@@ -145,16 +145,22 @@ function playerRotate() {
 }
 
 function drawBlock(x, y, color) {
+    const px = x * BLOCK_SIZE;
+    const py = y * BLOCK_SIZE;
+
     ctx.fillStyle = color;
-    ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
-    
-    // Inner bevel for slick arcade look
-    ctx.fillStyle = "rgba(255,255,255,0.2)";
-    ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE - 1, 4);
+    ctx.fillRect(px, py, BLOCK_SIZE - 1, BLOCK_SIZE - 1);
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+    ctx.fillRect(px + 2, py + 2, BLOCK_SIZE - 6, 6);
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(px + 0.5, py + 0.5, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 }
 
 function draw() {
-    ctx.fillStyle = "#020617";
+    ctx.fillStyle = "#070d19";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw Grid Stack

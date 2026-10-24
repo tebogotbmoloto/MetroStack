@@ -37,6 +37,60 @@ let player = {
     color: "#fff"
 };
 
+const audioCtx = window.AudioContext || window.webkitAudioContext ? new (window.AudioContext || window.webkitAudioContext)() : null;
+
+function ensureAudio() {
+    if (!audioCtx) return;
+    if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+    }
+}
+
+function playTone(freq, duration = 0.08, type = "sine", volume = 0.04, slide = 0) {
+    if (!audioCtx) return;
+
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    if (slide !== 0) {
+        oscillator.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), audioCtx.currentTime + duration);
+    }
+
+    gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(volume, audioCtx.currentTime + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + duration);
+}
+
+function playMoveSound() {
+    ensureAudio();
+    playTone(220, 0.05, "square", 0.025, 45);
+}
+
+function playRotateSound() {
+    ensureAudio();
+    playTone(330, 0.06, "triangle", 0.03, 80);
+}
+
+function playClearSound() {
+    ensureAudio();
+    playTone(500, 0.12, "triangle", 0.035, 120);
+    setTimeout(() => playTone(660, 0.1, "triangle", 0.035, 140), 70);
+}
+
+function playGameOverSound() {
+    ensureAudio();
+    playTone(180, 0.18, "sawtooth", 0.05, -30);
+    setTimeout(() => playTone(120, 0.22, "sawtooth", 0.05, -25), 120);
+}
+
 function spawnPiece() {
     const rand = Math.floor(Math.random() * SHAPES.length);
     player.matrix = SHAPES[rand].shape;
@@ -46,6 +100,7 @@ function spawnPiece() {
 
     if (checkCollision()) {
         gameOver = true;
+        playGameOverSound();
         showGameOverScreen();
     }
 }
@@ -92,6 +147,7 @@ function clearLines() {
         score += rowCount * 100 * level;
         level = Math.floor(lines / 10) + 1;
         dropInterval = Math.max(100, 500 - (level - 1) * 40);
+        playClearSound();
         updateUI();
     }
 }
@@ -111,6 +167,8 @@ function playerMove(dir) {
     player.pos.x += dir;
     if (checkCollision()) {
         player.pos.x -= dir;
+    } else {
+        playMoveSound();
     }
 }
 
@@ -140,25 +198,56 @@ function playerRotate() {
             return;
         }
     }
+
+    playRotateSound();
+}
+
+function hexToRgb(hex) {
+    const value = hex.replace('#', '');
+    const normalized = value.length === 3
+        ? value.split('').map(ch => ch + ch).join('')
+        : value;
+    const num = parseInt(normalized, 16);
+    return {
+        r: (num >> 16) & 255,
+        g: (num >> 8) & 255,
+        b: num & 255
+    };
+}
+
+function shadeColor(hex, amount) {
+    const { r, g, b } = hexToRgb(hex);
+    const adjust = (channel) => Math.max(0, Math.min(255, channel + amount));
+    return `rgb(${adjust(r)}, ${adjust(g)}, ${adjust(b)})`;
 }
 
 function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
+    const topColor = color;
+    const sideColor = shadeColor(color, -45);
+    const frontColor = shadeColor(color, -70);
 
     ctx.save();
     ctx.shadowColor = color;
     ctx.shadowBlur = 18;
-    ctx.fillStyle = color;
-    ctx.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+    ctx.fillStyle = topColor;
+    ctx.fillRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
 
     ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(255,255,255,0.42)";
-    ctx.fillRect(px + 3, py + 3, BLOCK_SIZE - 7, 6);
+    ctx.fillStyle = sideColor;
+    ctx.fillRect(px + BLOCK_SIZE - 6, py + 4, 4, BLOCK_SIZE - 8);
+    ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
+
+    ctx.fillStyle = frontColor;
+    ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
+
+    ctx.fillStyle = "rgba(255,255,255,0.48)";
+    ctx.fillRect(px + 5, py + 5, BLOCK_SIZE - 12, 6);
 
     ctx.strokeStyle = "rgba(255,255,255,0.7)";
     ctx.lineWidth = 1.5;
-    ctx.strokeRect(px + 1.2, py + 1.2, BLOCK_SIZE - 3, BLOCK_SIZE - 3);
+    ctx.strokeRect(px + 2.5, py + 2.5, BLOCK_SIZE - 5, BLOCK_SIZE - 5);
     ctx.restore();
 }
 
@@ -194,6 +283,7 @@ function updateUI() {
 function showStartScreen() {
     uiOverlay.innerHTML = `<button class="menuBtn" id="startBtn">START STACKING</button>`;
     document.getElementById("startBtn").onclick = () => {
+        ensureAudio();
         uiOverlay.innerHTML = "";
         grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
         score = 0;
@@ -213,6 +303,7 @@ function showGameOverScreen() {
         </div>
     `;
     document.getElementById("restartBtn").onclick = () => {
+        ensureAudio();
         uiOverlay.innerHTML = "";
         grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
         score = 0;

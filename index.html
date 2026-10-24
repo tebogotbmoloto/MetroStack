@@ -1,51 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MetroStack - Quantum Edition</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MetroStack - Quantum Edition</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-    <div id="gameContainer">
-        <aside id="sidebarLeft">
-            <div class="panel titlePanel">
-                <h2>METROSTACK</h2>
-                <p class="subtitle">QUANTUM EDITION</p>
-            </div>
+  <div class="scene-shell">
+    <aside class="city-panel">
+      <div class="title-wrap">
+        <div class="title-1">QUANTUM</div>
+        <div class="title-2">STACK</div>
+      </div>
 
-            <div class="panel">
-                <div class="statLabel">FARES EARNED</div>
-                <div class="statValue" id="score">R 0</div>
-            </div>
+      <div class="city-art" aria-hidden="true">
+        <div class="skyline skyline-a"></div>
+        <div class="skyline skyline-b"></div>
+        <div class="skyline skyline-c"></div>
+        <div class="road"></div>
+      </div>
 
-            <div class="panel">
-                <div class="statLabel">ROUTE LEVEL</div>
-                <div class="statValue" id="level">1</div>
-            </div>
-
-            <div class="panel">
-                <div class="statLabel">TRIPS CLEARED</div>
-                <div class="statValue" id="lines">0</div>
-            </div>
-
-            <div class="panel">
-                <div class="statLabel">BEST SCORE</div>
-                <div class="statValue" id="best">R 0</div>
-            </div>
-
-            <div class="panel">
-                <div class="statLabel">COMBO</div>
-                <div class="statValue" id="combo">x0</div>
-            </div>
-        </aside>
-
-        <div id="canvasWrapper">
-            <canvas id="gameCanvas" width="300" height="600"></canvas>
-            <div id="uiOverlay" class="visible"></div>
+      <div class="stat-stack">
+        <div class="stat-card">
+          <div class="stat-label">RHYTHM FARES</div>
+          <div class="stat-value" id="score">R 0</div>
         </div>
-    </div>
 
-    <script src="js/game.js"></script>
+        <div class="stat-card stat-mini">
+          <div class="stat-label">LEVEL</div>
+          <div class="stat-value" id="level">1</div>
+        </div>
+
+        <div class="stat-card stat-mini">
+          <div class="stat-label">ROUTES</div>
+          <div class="stat-value" id="lines">0</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="game-panel">
+      <canvas id="gameCanvas" width="300" height="600"></canvas>
+      <div id="uiOverlay" class="visible"></div>
+    </main>
+  </div>
+
+  <script src="js/game.js"></script>
 </body>
 </html>

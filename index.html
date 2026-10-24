@@ -7,42 +7,35 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <div class="scene-shell">
-    <aside class="city-panel">
-      <div class="title-wrap">
-        <div class="title-1">QUANTUM</div>
-        <div class="title-2">STACK</div>
+  <div id="gameContainer">
+    <aside id="sidebarLeft">
+      <div class="title-stack">
+        <span>QUANTUM</span>
+        <span>STACK</span>
       </div>
 
-      <div class="city-art" aria-hidden="true">
-        <div class="skyline skyline-a"></div>
-        <div class="skyline skyline-b"></div>
-        <div class="skyline skyline-c"></div>
-        <div class="road"></div>
+      <div class="stat-item">
+        <span class="stat-label">RHYTHM FARES</span>
+        <span class="stat-value" id="score">R 0</span>
       </div>
 
-      <div class="stat-stack">
-        <div class="stat-card">
-          <div class="stat-label">RHYTHM FARES</div>
-          <div class="stat-value" id="score">R 0</div>
-        </div>
-
-        <div class="stat-card stat-mini">
-          <div class="stat-label">LEVEL</div>
-          <div class="stat-value" id="level">1</div>
-        </div>
-
-        <div class="stat-card stat-mini">
-          <div class="stat-label">ROUTES</div>
-          <div class="stat-value" id="lines">0</div>
-        </div>
+      <div class="stat-item">
+        <span class="stat-label">LEVEL</span>
+        <span class="stat-value" id="level">1</span>
       </div>
+
+      <div class="stat-item">
+        <span class="stat-label">ROUTES</span>
+        <span class="stat-value" id="lines">0</span>
+      </div>
+
+      <div class="panel-placeholder" aria-hidden="true"></div>
     </aside>
 
-    <main class="game-panel">
+    <div id="canvasWrapper">
       <canvas id="gameCanvas" width="300" height="600"></canvas>
       <div id="uiOverlay" class="visible"></div>
-    </main>
+    </div>
   </div>
 
   <script src="js/game.js"></script>

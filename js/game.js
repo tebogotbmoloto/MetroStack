@@ -332,7 +332,11 @@ function updateUI() {
 }
 
 function showStartScreen() {
-    uiOverlay.innerHTML = '<button class="menuBtn" id="startBtn">START STACKING</button>';
+    uiOverlay.innerHTML = `
+        <div class="revivedPanel">
+            <button class="menuBtn" id="startBtn">START STACKING</button>
+        </div>
+    `;
 
     const startBtn = document.getElementById("startBtn");
     startBtn.addEventListener("click", () => {
@@ -343,10 +347,12 @@ function showStartScreen() {
 
 function showGameOverScreen() {
     uiOverlay.innerHTML = `
-        <div style="text-align: center; max-width: 260px;">
-            <h2 style="color: #ff6b9a; font-size: 20px; margin-bottom: 10px;">ROUTE BLOCKED!</h2>
-            <button class="menuBtn" id="reviveBtn" style="background: linear-gradient(135deg, #FFB14A, #FF78F0); margin-bottom: 10px;">🎬 WATCH AD TO REVIVE</button>
-            <button class="menuBtn" id="restartBtn" style="font-size: 14px; padding: 10px;">TRY AGAIN</button>
+        <div class="revivedPanel">
+            <h2 style="color: var(--pink); margin-bottom: 12px; font-size: 20px;">ROUTE BLOCKED!</h2>
+            <div class="reviveActions">
+                <button class="menuBtn" id="reviveBtn">🎬 WATCH AD TO REVIVE</button>
+                <button class="menuBtn secondaryBtn" id="restartBtn">TRY AGAIN</button>
+            </div>
         </div>
     `;
 
@@ -365,14 +371,23 @@ function showGameOverScreen() {
 
 function triggerAdRevive() {
     uiOverlay.innerHTML = `
-        <div style="text-align: center;">
-            <h3 style="color: #00FFFF; font-size: 16px; margin-bottom: 8px;">SPONSORED PARTNER AD</h3>
-            <p style="font-size: 12px; color: #aaa; margin-bottom: 15px;">Clearing traffic lane & staying on Level ${level}...</p>
-            <div style="font-size: 24px; font-weight: bold; color: #FFEE00;" id="adTimer">3</div>
+        <div class="revivedPanel">
+            <h2 style="color: var(--cyan); font-size: 18px; margin-bottom: 6px;">SPONSORED PARTNER AD</h2>
+            <p class="statLabel" style="margin-bottom: 12px;">Clearing lane & staying on Level ${level}...</p>
+            <div class="adBar">
+                <div class="adProgress" id="adProgress"></div>
+            </div>
+            <div style="font-size: 24px; font-weight: bold; color: var(--yellow); margin-top: 10px;" id="adTimer">3</div>
         </div>
     `;
 
     playAdJingle();
+    
+    setTimeout(() => {
+        const bar = document.getElementById("adProgress");
+        if (bar) bar.style.width = "0%";
+    }, 50);
+
     let timeLeft = 3;
     const timerInterval = setInterval(() => {
         timeLeft--;

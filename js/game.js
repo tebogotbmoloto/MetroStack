@@ -21,17 +21,17 @@ let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
-// Maximum brightness & saturation neon colors
+// Your original bright neon color palette
 const SHAPES = [
-    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Cyan Neon
-    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFFF00" }, // Bright Yellow
-    { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Magenta Neon
-    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF0055" }, // Hot Neon Red
-    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00FF55" }, // Neon Green
-    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#0088FF" }, // Electric Blue
-    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF6600" }, // Bright Orange
-    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#CC00FF" }, // Vivid Purple
-    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#7700FF" }  // Deep Neon Violet
+    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Ultra-Bright Cyan
+    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFFF00" }, // Pure Electric Yellow
+    { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Neon Magenta
+    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF2A55" }, // Vivid Neon Red
+    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00FF66" }, // Neon Lime Green
+    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#00A2FF" }, // Bright Sky Blue
+    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF7700" }, // Vibrant Neon Orange
+    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#EE33FF" }, // Bright Orchid
+    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#9955FF" }  // Electric Purple
 ];
 
 let player = {
@@ -264,28 +264,28 @@ function drawBlock(x, y, color) {
     const py = y * BLOCK_SIZE;
 
     ctx.save();
-    // High-intensity neon aura glow
-    ctx.shadowBlur = 12;
+    // High-intensity neon glow aura for maximum mobile visibility
+    ctx.shadowBlur = 15;
     ctx.shadowColor = color;
 
-    // Solid vivid neon fill
+    // Outer rich neon block fill
     ctx.fillStyle = color;
     ctx.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 
-    // Brilliant white inner core for extreme brightness and clarity
+    // Solid white inner core to cut through phone screen auto-dimming
     ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 8, 4);
+    ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 8, BLOCK_SIZE - 8);
 
-    // Crisp high-contrast outer border
-    ctx.strokeStyle = "#FFFFFF";
-    ctx.lineWidth = 1.8;
+    // Crisp vivid outer border
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
     ctx.strokeRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
     
     ctx.restore();
 }
 
 function draw() {
-    ctx.fillStyle = "#020611";
+    ctx.fillStyle = "#030712";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (let r = 0; r < ROWS; r++) {

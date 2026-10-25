@@ -20,7 +20,7 @@ let gameOver = true;
 let isPaused = false;
 let isReviving = false;
 let reviveAvailable = true;
-let dropInterval = 500;
+dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
@@ -322,6 +322,7 @@ function finishRevive() {
         player.pos.x = Math.floor(COLS / 2) - Math.floor(player.matrix[0].length / 2);
     }
 
+    dropCounter = 0;
     lastTime = performance.now();
 }
 
@@ -329,6 +330,7 @@ function startAdRevive() {
     if (isReviving || !reviveAvailable) return;
     isReviving = true;
     reviveAvailable = false;
+    gameOver = false;
 
     let timeLeft = REVIVE_SECONDS;
     uiOverlay.innerHTML = `

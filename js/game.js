@@ -108,7 +108,22 @@ function clearBoardForNewGame() {
     dropInterval = 500;
     dropCounter = 0;
     lastTime = 0;
+    player.matrix = null;
+    player.pos.x = 0;
+    player.pos.y = 0;
+    player.color = "#fff";
     updateUI();
+}
+
+function createNewGameState() {
+    clearReviveInterval();
+    uiOverlay.innerHTML = "";
+    clearBoardForNewGame();
+    gameOver = false;
+    isPaused = false;
+    isReviving = false;
+    reviveAvailable = true;
+    spawnPiece();
 }
 
 function spawnPiece() {
@@ -380,14 +395,7 @@ function showRevivePrompt() {
 
     document.getElementById("restartBtn").onclick = () => {
         clearReviveInterval();
-        ensureAudio();
-        uiOverlay.innerHTML = "";
-        clearBoardForNewGame();
-        gameOver = false;
-        isPaused = false;
-        isReviving = false;
-        reviveAvailable = true;
-        spawnPiece();
+        createNewGameState();
     };
 }
 
@@ -425,13 +433,7 @@ function showStartScreen() {
     uiOverlay.innerHTML = `<button class="menuBtn" id="startBtn">START STACKING</button>`;
     document.getElementById("startBtn").onclick = () => {
         ensureAudio();
-        uiOverlay.innerHTML = "";
-        clearBoardForNewGame();
-        gameOver = false;
-        isPaused = false;
-        isReviving = false;
-        reviveAvailable = true;
-        spawnPiece();
+        createNewGameState();
     };
 }
 

@@ -16,24 +16,24 @@ let score = 0;
 let level = 1;
 let lines = 0;
 let gameOver = true;
+let isPaused = false;
 let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
-// Tetromino Shapes & Colors (more variation + brighter neon arcade palette)
 const SHAPES = [
-    { shape: [[1, 1, 1, 1]], color: "#7AF9FF" }, // I - Metro Line
-    { shape: [[1, 1], [1, 1]], color: "#FFE76A" }, // O - Stoplight
-    { shape: [[0, 1, 0], [1, 1, 1]], color: "#FF6EEB" }, // T - Transit Tower
-    { shape: [[1, 1, 0], [0, 1, 1]], color: "#FF5D73" }, // Z - Express Rush
-    { shape: [[0, 1, 1], [1, 1, 0]], color: "#70FF9B" }, // S - Green Route
-    { shape: [[1, 0, 0], [1, 1, 1]], color: "#7CC9FF" }, // L - Mini-bus L
-    { shape: [[0, 0, 1], [1, 1, 1]], color: "#FFB347" }, // J - Night Route
-    { shape: [[1, 1, 1], [1, 1, 0]], color: "#C98BFF" }, // P - Platform Block
-    { shape: [[1, 1, 1], [1, 0, 1]], color: "#44F0D6" }, // X - Pulse Core
-    { shape: [[1, 0, 1], [1, 1, 1]], color: "#FF8A5B" }, // U - Station Curve
-    { shape: [[1, 1, 1], [0, 1, 0], [0, 1, 0]], color: "#FFFD78" }, // Vertical Beam
-    { shape: [[1, 1, 0], [1, 0, 1], [0, 1, 1]], color: "#8FF7FF" } // Hybrid Metro Node
+    { shape: [[1, 1, 1, 1]], color: "#7AF9FF" },
+    { shape: [[1, 1], [1, 1]], color: "#FFE76A" },
+    { shape: [[0, 1, 0], [1, 1, 1]], color: "#FF6EEB" },
+    { shape: [[1, 1, 0], [0, 1, 1]], color: "#FF5D73" },
+    { shape: [[0, 1, 1], [1, 1, 0]], color: "#70FF9B" },
+    { shape: [[1, 0, 0], [1, 1, 1]], color: "#7CC9FF" },
+    { shape: [[0, 0, 1], [1, 1, 1]], color: "#FFB347" },
+    { shape: [[1, 1, 1], [1, 1, 0]], color: "#C98BFF" },
+    { shape: [[1, 1, 1], [1, 0, 1]], color: "#44F0D6" },
+    { shape: [[1, 0, 1], [1, 1, 1]], color: "#FF8A5B" },
+    { shape: [[1, 1, 1], [0, 1, 0], [0, 1, 0]], color: "#FFFD78" },
+    { shape: [[1, 1, 0], [1, 0, 1], [0, 1, 1]], color: "#8FF7FF" }
 ];
 
 let player = {
@@ -234,12 +234,12 @@ function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
     const topColor = color;
-    const sideColor = shadeColor(color, -36);
-    const faceColor = shadeColor(color, -62);
+    const sideColor = shadeColor(color, -26);
+    const faceColor = shadeColor(color, -52);
 
     ctx.save();
     ctx.shadowColor = color;
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 16;
     ctx.fillStyle = topColor;
     ctx.fillRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
 
@@ -251,7 +251,7 @@ function drawBlock(x, y, color) {
     ctx.fillStyle = faceColor;
     ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
 
-    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    ctx.fillStyle = "rgba(255,255,255,0.58)";
     ctx.fillRect(px + 5, py + 5, BLOCK_SIZE - 12, 6);
 
     ctx.strokeStyle = "rgba(255,255,255,0.9)";
@@ -261,7 +261,7 @@ function drawBlock(x, y, color) {
 }
 
 function draw() {
-    ctx.fillStyle = "#050d1c";
+    ctx.fillStyle = "#070f1f";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (let r = 0; r < ROWS; r++) {
@@ -289,7 +289,34 @@ function updateUI() {
     uiLines.innerText = lines;
 }
 
+function showPauseScreen() {
+    uiOverlay.innerHTML = `
+        <div style="text-align: center;">
+            <h2 style="color: #7af9ff; font-size: 22px; margin-bottom: 12px; text-shadow: 0 0 12px rgba(122,249,255,0.9);">PAUSED</h2>
+            <button class="menuBtn" id="resumeBtn">RESUME</button>
+        </div>
+    `;
+    document.getElementById("resumeBtn").onclick = () => {
+        ensureAudio();
+        uiOverlay.innerHTML = "";
+        isPaused = false;
+        lastTime = performance.now();
+    };
+}
+
+function togglePause() {
+    if (gameOver) return;
+    isPaused = !isPaused;
+    if (isPaused) {
+        showPauseScreen();
+    } else {
+        uiOverlay.innerHTML = "";
+        lastTime = performance.now();
+    }
+}
+
 function showStartScreen() {
+    isPaused = false;
     uiOverlay.innerHTML = `<button class="menuBtn" id="startBtn">START STACKING</button>`;
     document.getElementById("startBtn").onclick = () => {
         ensureAudio();
@@ -300,6 +327,7 @@ function showStartScreen() {
         level = 1;
         updateUI();
         gameOver = false;
+        isPaused = false;
         spawnPiece();
     };
 }
@@ -320,13 +348,20 @@ function showGameOverScreen() {
         level = 1;
         updateUI();
         gameOver = false;
+        isPaused = false;
         spawnPiece();
     };
 }
 
-// Controls
 document.addEventListener("keydown", event => {
-    if (gameOver) return;
+    if (event.code === "KeyP" || event.code === "Escape") {
+        if (!gameOver) {
+            togglePause();
+        }
+        return;
+    }
+
+    if (gameOver || isPaused) return;
     if (event.code === "ArrowLeft" || event.code === "KeyA") {
         playerMove(-1);
     } else if (event.code === "ArrowRight" || event.code === "KeyD") {
@@ -338,12 +373,11 @@ document.addEventListener("keydown", event => {
     }
 });
 
-// Game Loop
 function gameLoop(time = 0) {
     const deltaTime = time - lastTime;
     lastTime = time;
 
-    if (!gameOver) {
+    if (!gameOver && !isPaused) {
         dropCounter += deltaTime;
         if (dropCounter > dropInterval) {
             playerDrop();

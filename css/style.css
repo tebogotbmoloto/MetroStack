@@ -1,19 +1,22 @@
 :root {
     --bg-1: #020611;
-    --bg-2: #090d1d;
-    --bg-3: #110b22;
-    --panel: rgba(12, 18, 32, 0.92);
-    --panel-2: rgba(16, 23, 42, 0.95);
-    --cyan: #7af9ff;
-    --cyan-strong: #45e7ff;
-    --pink: #ff4fd8;
-    --pink-strong: #ff2ad4;
-    --yellow: #ffe76a;
-    --lime: #8bff7a;
-    --blue: #79d6ff;
-    --orange: #ff9f43;
-    --red: #ff668a;
-    --panel-line: rgba(122, 249, 255, 0.9);
+    --bg-2: #0b0f22;
+    --bg-3: #140b2a;
+    --bg-4: #1b0f3e;
+    --panel: rgba(10, 16, 32, 0.9);
+    --panel-2: rgba(15, 23, 43, 0.95);
+    --cyan: #82fbff;
+    --cyan-strong: #3feaff;
+    --pink: #ff62eb;
+    --pink-strong: #ff3ac8;
+    --yellow: #fff26a;
+    --lime: #9cff7a;
+    --blue: #7ac9ff;
+    --orange: #ffb85d;
+    --red: #ff6d8b;
+    --violet: #c89bff;
+    --mint: #69ffd7;
+    --panel-line: rgba(130, 251, 255, 0.95);
 }
 
 * {
@@ -25,9 +28,10 @@
 
 body {
     background:
-        radial-gradient(circle at 50% 0%, rgba(255, 79, 216, 0.22), transparent 30%),
-        radial-gradient(circle at 20% 20%, rgba(70, 233, 255, 0.18), transparent 25%),
-        linear-gradient(180deg, var(--bg-3) 0%, var(--bg-2) 35%, var(--bg-1) 100%);
+        radial-gradient(circle at 50% 0%, rgba(255, 98, 235, 0.44), transparent 24%),
+        radial-gradient(circle at 18% 18%, rgba(91, 245, 255, 0.35), transparent 20%),
+        radial-gradient(circle at 82% 20%, rgba(255, 184, 93, 0.20), transparent 18%),
+        linear-gradient(180deg, var(--bg-4) 0%, var(--bg-3) 28%, var(--bg-2) 55%, var(--bg-1) 100%);
     color: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     display: flex;
@@ -40,15 +44,16 @@ body {
 #gameContainer {
     display: flex;
     gap: 25px;
-    background: linear-gradient(135deg, rgba(14, 19, 35, 0.98), rgba(5, 10, 24, 0.96));
-    border: 2px solid rgba(122, 249, 255, 0.9);
+    background: linear-gradient(135deg, rgba(17, 24, 42, 0.98), rgba(8, 12, 25, 0.98));
+    border: 2px solid rgba(130, 251, 255, 1);
     padding: 30px;
     border-radius: 22px;
     box-shadow:
-        0 0 0 2px rgba(255, 79, 216, 0.25),
-        0 0 20px rgba(122, 249, 255, 0.35),
-        0 0 50px rgba(255, 79, 216, 0.18),
-        inset 0 0 18px rgba(122, 249, 255, 0.08);
+        0 0 0 2px rgba(255, 98, 235, 0.32),
+        0 0 22px rgba(130, 251, 255, 0.7),
+        0 0 54px rgba(255, 98, 235, 0.26),
+        inset 0 0 22px rgba(130, 251, 255, 0.18),
+        inset 0 0 42px rgba(255, 98, 235, 0.08);
 }
 
 #sidebarLeft {
@@ -59,21 +64,21 @@ body {
 }
 
 .panel {
-    background: rgba(8, 13, 24, 0.86);
-    border: 1px solid rgba(122, 249, 255, 0.7);
+    background: rgba(9, 15, 28, 0.88);
+    border: 1px solid rgba(130, 251, 255, 0.74);
     padding: 15px;
     border-radius: 14px;
     box-shadow:
-        inset 0 0 12px rgba(122, 249, 255, 0.14),
-        0 0 18px rgba(122, 249, 255, 0.12),
-        0 0 8px rgba(255, 79, 216, 0.12);
+        inset 0 0 14px rgba(130, 251, 255, 0.15),
+        0 0 18px rgba(130, 251, 255, 0.14),
+        0 0 12px rgba(255, 98, 235, 0.15);
 }
 
 .panel h2 {
     color: var(--cyan);
     font-size: 20px;
     letter-spacing: 1px;
-    text-shadow: 0 0 12px rgba(122, 249, 255, 0.9), 0 0 20px rgba(255, 79, 216, 0.5);
+    text-shadow: 0 0 12px rgba(130, 251, 255, 0.95), 0 0 24px rgba(255, 98, 235, 0.66);
 }
 
 .subtitle {
@@ -82,12 +87,12 @@ body {
     font-weight: 800;
     letter-spacing: 2px;
     margin-top: 4px;
-    text-shadow: 0 0 10px rgba(255, 79, 216, 0.9);
+    text-shadow: 0 0 12px rgba(255, 98, 235, 0.95), 0 0 20px rgba(130, 251, 255, 0.6);
 }
 
 .statLabel {
     font-size: 11px;
-    color: #dfeafb;
+    color: #ebf6ff;
     letter-spacing: 1.5px;
     margin-bottom: 5px;
     opacity: 0.95;
@@ -98,24 +103,24 @@ body {
     font-weight: 800;
     color: var(--yellow);
     font-family: "SFMono-Regular", Consolas, monospace;
-    text-shadow: 0 0 10px rgba(255, 231, 106, 0.8);
+    text-shadow: 0 0 12px rgba(255, 242, 106, 0.9), 0 0 20px rgba(255, 184, 93, 0.75);
 }
 
 #canvasWrapper {
     position: relative;
-    border: 3px solid rgba(122, 249, 255, 0.95);
+    border: 3px solid rgba(130, 251, 255, 0.98);
     border-radius: 12px;
     overflow: hidden;
-    background: linear-gradient(180deg, rgba(7, 11, 22, 1), rgba(2, 6, 20, 1));
+    background: linear-gradient(180deg, rgba(8, 16, 28, 1), rgba(4, 9, 20, 1));
     box-shadow:
-        inset 0 0 18px rgba(122, 249, 255, 0.2),
-        0 0 18px rgba(122, 249, 255, 0.22),
-        0 0 26px rgba(255, 79, 216, 0.12);
+        inset 0 0 20px rgba(130, 251, 255, 0.25),
+        0 0 20px rgba(130, 251, 255, 0.38),
+        0 0 34px rgba(255, 98, 235, 0.18);
 }
 
 canvas {
     display: block;
-    background: linear-gradient(180deg, rgba(7, 13, 25, 1), rgba(2, 6, 20, 1));
+    background: linear-gradient(180deg, rgba(8, 17, 31, 1), rgba(2, 7, 18, 1));
     image-rendering: pixelated;
     image-rendering: crisp-edges;
 }
@@ -129,7 +134,7 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(2, 6, 23, 0.72);
+    background: rgba(2, 7, 23, 0.64);
     backdrop-filter: blur(2px);
 }
 
@@ -144,16 +149,16 @@ canvas {
     border-radius: 12px;
     cursor: pointer;
     box-shadow:
-        0 0 18px rgba(122, 249, 255, 0.82),
-        0 0 26px rgba(255, 79, 216, 0.55),
-        0 0 40px rgba(122, 249, 255, 0.25);
+        0 0 18px rgba(130, 251, 255, 0.9),
+        0 0 26px rgba(255, 98, 235, 0.7),
+        0 0 42px rgba(130, 251, 255, 0.22);
     transition: transform 0.1s ease, box-shadow 0.2s ease;
 }
 
 .menuBtn:hover {
     transform: scale(1.05);
     box-shadow:
-        0 0 24px rgba(122, 249, 255, 0.9),
-        0 0 34px rgba(255, 79, 216, 0.75),
-        0 0 50px rgba(122, 249, 255, 0.3);
+        0 0 24px rgba(130, 251, 255, 1),
+        0 0 34px rgba(255, 98, 235, 0.9),
+        0 0 50px rgba(130, 251, 255, 0.35);
 }

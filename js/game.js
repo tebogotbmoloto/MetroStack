@@ -23,6 +23,7 @@ let reviveAvailable = true;
 let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
+let reviveInterval = null;
 
 const SHAPES = [
     { shape: [[1, 1, 1, 1]], color: "#8AFBFF" },
@@ -128,8 +129,8 @@ function checkCollision() {
     for (let r = 0; r < player.matrix.length; r++) {
         for (let c = 0; c < player.matrix[r].length; c++) {
             if (player.matrix[r][c] !== 0) {
-                let newX = player.pos.x + c;
-                let newY = player.pos.y + r;
+                const newX = player.pos.x + c;
+                const newY = player.pos.y + r;
                 if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
                 if (newY >= 0 && grid[newY][newX] !== 0) return true;
             }
@@ -297,13 +298,15 @@ function draw() {
     }
 }
 
-function updateUI() {
-    uiScore.innerText = `R ${score}`;
-    uiLevel.innerText = level;
-    uiLines.innerText = lines;
+function clearReviveInterval() {
+    if (reviveInterval) {
+        clearInterval(reviveInterval);
+        reviveInterval = null;
+    }
 }
 
 function finishRevive() {
+    clearReviveInterval();
     uiOverlay.innerHTML = "";
     isReviving = false;
     gameOver = false;
@@ -329,6 +332,7 @@ function finishRevive() {
 function startAdRevive() {
     if (isReviving || !reviveAvailable) return;
 
+    clearReviveInterval();
     isReviving = true;
     reviveAvailable = false;
     gameOver = true;
@@ -347,14 +351,13 @@ function startAdRevive() {
     const timerEl = document.getElementById("reviveTimer");
     const progressEl = document.getElementById("reviveProgress");
 
-    const interval = setInterval(() => {
+    reviveInterval = setInterval(() => {
         timeLeft -= 1;
         timerEl.textContent = Math.max(0, timeLeft);
         progressEl.style.width = `${(Math.max(0, timeLeft) / REVIVE_SECONDS) * 100}%`;
 
         if (timeLeft <= 0) {
-            clearInterval(interval);
-            setTimeout(() => finishRevive(), 250);
+            finishRevive();
         }
     }, 1000);
 }
@@ -376,6 +379,7 @@ function showRevivePrompt() {
     document.getElementById("watchAdBtn").onclick = startAdRevive;
 
     document.getElementById("restartBtn").onclick = () => {
+        clearReviveInterval();
         ensureAudio();
         uiOverlay.innerHTML = "";
         clearBoardForNewGame();
@@ -414,6 +418,7 @@ function togglePause() {
 }
 
 function showStartScreen() {
+    clearReviveInterval();
     isPaused = false;
     isReviving = false;
     reviveAvailable = true;

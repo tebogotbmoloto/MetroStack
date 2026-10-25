@@ -1,446 +1,213 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-ctx.imageSmoothingEnabled = false;
-
-const uiOverlay = document.getElementById("uiOverlay");
-const uiScore = document.getElementById("score");
-const uiLevel = document.getElementById("level");
-const uiLines = document.getElementById("lines");
-
-const ROWS = 20;
-const COLS = 10;
-const BLOCK_SIZE = 30;
-
-let grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-let score = 0;
-let level = 1;
-let lines = 0;
-let gameOver = true;
-let dropInterval = 500;
-let dropCounter = 0;
-let lastTime = 0;
-
-const SHAPES = [
-    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Vivid Neon Cyan
-    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFEE00" }, // Electric Yellow
-    { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Neon Magenta
-    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF1744" }, // Bright Hot Red
-    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00E676" }, // Neon Mint Green
-    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#00B0FF" }, // Bright Azure Blue
-    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF9100" }, // Vivid Tangerine
-    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#E040FB" }, // Bright Orchid
-    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#7C4DFF" }  // Electric Violet
-];
-
-let player = {
-    pos: { x: 0, y: 0 },
-    matrix: null,
-    color: "#ffffff"
-};
-
-const AudioCtor = window.AudioContext || window.webkitAudioContext;
-const audioCtx = AudioCtor ? new AudioCtor() : null;
-
-function ensureAudio() {
-    if (!audioCtx) return;
-    if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-    }
+:root {
+    --bg-1: #020611;
+    --bg-2: #0b0f22;
+    --bg-3: #140b2a;
+    --bg-4: #1b0f3e;
+    --panel: rgba(10, 16, 32, 0.9);
+    --panel-2: rgba(15, 23, 43, 0.95);
+    --cyan: #82fbff;
+    --cyan-strong: #3feaff;
+    --pink: #ff62eb;
+    --pink-strong: #ff3ac8;
+    --yellow: #fff26a;
+    --lime: #9cff7a;
+    --blue: #7ac9ff;
+    --orange: #ffb85d;
+    --red: #ff6d8b;
+    --violet: #c89bff;
+    --mint: #69ffd7;
+    --panel-line: rgba(130, 251, 255, 0.95);
 }
 
-function playTone(freq, duration = 0.08, type = "sine", volume = 0.04, slide = 0) {
-    if (!audioCtx) return;
-
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-
-    oscillator.type = type;
-    oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    if (slide !== 0) {
-        oscillator.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), audioCtx.currentTime + duration);
-    }
-
-    gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(volume, audioCtx.currentTime + 0.02);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + duration);
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
 }
 
-function playMoveSound() {
-    ensureAudio();
-    playTone(220, 0.05, "square", 0.025, 45);
+body {
+    background:
+        radial-gradient(circle at 50% 0%, rgba(255, 98, 235, 0.44), transparent 24%),
+        radial-gradient(circle at 18% 18%, rgba(91, 245, 255, 0.35), transparent 20%),
+        radial-gradient(circle at 82% 20%, rgba(255, 184, 93, 0.20), transparent 18%),
+        linear-gradient(180deg, var(--bg-4) 0%, var(--bg-3) 28%, var(--bg-2) 55%, var(--bg-1) 100%);
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
 }
 
-function playRotateSound() {
-    ensureAudio();
-    playTone(330, 0.06, "triangle", 0.03, 80);
+#gameContainer {
+    display: flex;
+    gap: 25px;
+    background: linear-gradient(135deg, rgba(17, 24, 42, 0.98), rgba(8, 12, 25, 0.98));
+    border: 2px solid rgba(130, 251, 255, 1);
+    padding: 30px;
+    border-radius: 22px;
+    box-shadow:
+        0 0 0 2px rgba(255, 98, 235, 0.32),
+        0 0 22px rgba(130, 251, 255, 0.7),
+        0 0 54px rgba(255, 98, 235, 0.26),
+        inset 0 0 22px rgba(130, 251, 255, 0.18),
+        inset 0 0 42px rgba(255, 98, 235, 0.08);
 }
 
-function playClearSound() {
-    ensureAudio();
-    playTone(500, 0.12, "triangle", 0.035, 120);
-    setTimeout(() => playTone(660, 0.1, "triangle", 0.035, 140), 70);
+#sidebarLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 220px;
 }
 
-function playGameOverSound() {
-    ensureAudio();
-    playTone(180, 0.18, "sawtooth", 0.05, -30);
-    setTimeout(() => playTone(120, 0.22, "sawtooth", 0.05, -25), 120);
+.panel {
+    background: rgba(9, 15, 28, 0.88);
+    border: 1px solid rgba(130, 251, 255, 0.74);
+    padding: 15px;
+    border-radius: 14px;
+    box-shadow:
+        inset 0 0 14px rgba(130, 251, 255, 0.15),
+        0 0 18px rgba(130, 251, 255, 0.14),
+        0 0 12px rgba(255, 98, 235, 0.15);
 }
 
-function playAdJingle() {
-    ensureAudio();
-    playTone(440, 0.1, "sine", 0.04, 100);
-    setTimeout(() => playTone(554, 0.1, "sine", 0.04, 100), 100);
-    setTimeout(() => playTone(659, 0.15, "sine", 0.04, 150), 200);
-    setTimeout(() => playTone(880, 0.3, "sine", 0.05, 200), 350);
+.panel h2 {
+    color: var(--cyan);
+    font-size: 20px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 12px rgba(130, 251, 255, 0.95), 0 0 24px rgba(255, 98, 235, 0.66);
 }
 
-function resetBoard() {
-    grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-    score = 0;
-    lines = 0;
-    level = 1;
-    dropInterval = 500;
-    dropCounter = 0;
-    lastTime = 0;
-    updateUI();
+.subtitle {
+    color: var(--pink);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-top: 4px;
+    text-shadow: 0 0 12px rgba(255, 98, 235, 0.95), 0 0 20px rgba(130, 251, 255, 0.6);
 }
 
-function startNewGame() {
-    uiOverlay.innerHTML = "";
-    resetBoard();
-    gameOver = false;
-    spawnPiece();
+.statLabel {
+    font-size: 11px;
+    color: #ebf6ff;
+    letter-spacing: 1.5px;
+    margin-bottom: 5px;
+    opacity: 0.95;
 }
 
-function spawnPiece() {
-    const rand = Math.floor(Math.random() * SHAPES.length);
-    const nextShape = SHAPES[rand];
-
-    player.matrix = nextShape.shape.map(row => row.slice());
-    player.color = nextShape.color;
-    player.pos.y = 0;
-    player.pos.x = Math.floor(COLS / 2) - Math.floor(player.matrix[0].length / 2);
-
-    if (checkCollision()) {
-        gameOver = true;
-        player.matrix = null;
-        playGameOverSound();
-        showGameOverScreen();
-    }
+.statValue {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--yellow);
+    font-family: "SFMono-Regular", Consolas, monospace;
+    text-shadow: 0 0 12px rgba(255, 242, 106, 0.9), 0 0 20px rgba(255, 184, 93, 0.75);
 }
 
-function checkCollision() {
-    if (!player.matrix) return false;
-    for (let r = 0; r < player.matrix.length; r++) {
-        for (let c = 0; c < player.matrix[r].length; c++) {
-            if (player.matrix[r][c] === 0) continue;
-
-            const newX = player.pos.x + c;
-            const newY = player.pos.y + r;
-
-            if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
-            if (newY >= 0 && grid[newY][newX] !== 0) return true;
-        }
-    }
-    return false;
+#canvasWrapper {
+    position: relative;
+    border: 3px solid rgba(130, 251, 255, 0.98);
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(8, 16, 28, 1), rgba(4, 9, 20, 1));
+    box-shadow:
+        inset 0 0 20px rgba(130, 251, 255, 0.25),
+        0 0 20px rgba(130, 251, 255, 0.38),
+        0 0 34px rgba(255, 98, 235, 0.18);
 }
 
-function mergePiece() {
-    if (!player.matrix) return;
-    player.matrix.forEach((row, r) => {
-        row.forEach((value, c) => {
-            if (value !== 0) {
-                const x = player.pos.x + c;
-                const y = player.pos.y + r;
-
-                if (y >= 0 && y < ROWS && x >= 0 && x < COLS) {
-                    grid[y][x] = player.color;
-                }
-            }
-        });
-    });
+canvas {
+    display: block;
+    background: linear-gradient(180deg, rgba(8, 17, 31, 1), rgba(2, 7, 18, 1));
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
 }
 
-function clearLines() {
-    let rowCount = 0;
-
-    for (let r = ROWS - 1; r >= 0; r--) {
-        const fullRow = grid[r].every(cell => cell !== 0);
-        if (!fullRow) continue;
-
-        const removed = grid.splice(r, 1)[0];
-        removed.fill(0);
-        grid.unshift(removed);
-        rowCount++;
-        r++;
-    }
-
-    if (rowCount > 0) {
-        lines += rowCount;
-        score += rowCount * 100 * level;
-        level = Math.floor(lines / 10) + 1;
-        dropInterval = Math.max(100, 500 - (level - 1) * 40);
-        playClearSound();
-        updateUI();
-    }
+#uiOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(2, 7, 23, 0.78);
+    backdrop-filter: blur(3px);
+    z-index: 20;
 }
 
-function playerDrop() {
-    if (gameOver) return;
-    player.pos.y += 1;
-
-    if (checkCollision()) {
-        player.pos.y -= 1;
-        mergePiece();
-        clearLines();
-        if (!gameOver) {
-            spawnPiece();
-        }
-    }
-
-    dropCounter = 0;
+.revivedPanel,
+.revivePanel {
+    text-align: center;
+    padding: 22px 24px;
+    border-radius: 16px;
+    background: rgba(7, 15, 27, 0.95);
+    border: 2px solid rgba(130, 251, 255, 0.85);
+    box-shadow: 0 0 25px rgba(130, 251, 255, 0.3), 0 0 40px rgba(255, 98, 235, 0.2);
+    width: 260px;
 }
 
-function playerMove(dir) {
-    if (gameOver) return;
-    player.pos.x += dir;
-    if (checkCollision()) {
-        player.pos.x -= dir;
-    } else {
-        playMoveSound();
-    }
+.reviveActions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 15px;
+    width: 100%;
 }
 
-function rotateMatrix(matrix) {
-    const rows = matrix.length;
-    const cols = matrix[0].length;
-    const rotated = Array.from({ length: cols }, () => Array(rows).fill(0));
-
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            rotated[c][rows - 1 - r] = matrix[r][c];
-        }
-    }
-
-    return rotated;
+.adBar {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid rgba(130, 251, 255, 0.4);
+    margin: 10px 0;
 }
 
-function playerRotate() {
-    if (gameOver || !player.matrix) return;
-    const prevMatrix = player.matrix.map(row => row.slice());
-    const prevX = player.pos.x;
-    const rotated = rotateMatrix(player.matrix);
-
-    player.matrix = rotated;
-
-    let offset = 0;
-    while (checkCollision()) {
-        player.pos.x += 1;
-        offset += 1;
-
-        if (offset > 3) {
-            player.matrix = prevMatrix;
-            player.pos.x = prevX;
-            return;
-        }
-    }
-
-    playRotateSound();
+.adProgress {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--pink), var(--yellow));
+    border-radius: inherit;
+    box-shadow: 0 0 12px rgba(130, 251, 255, 0.8);
+    transition: width 2.9s linear;
 }
 
-function hexToRgb(hex) {
-    const clean = hex.replace("#", "");
-    const normalized = clean.length === 3
-        ? clean.split("").map(ch => ch + ch).join("")
-        : clean;
-
-    const num = parseInt(normalized, 16);
-    return {
-        r: (num >> 16) & 255,
-        g: (num >> 8) & 255,
-        b: num & 255
-    };
+.secondaryBtn {
+    background: linear-gradient(135deg, #1b2746, #101d35);
+    color: #edf7ff;
+    border: 1px solid rgba(130, 251, 255, 0.5);
+    box-shadow: 0 0 12px rgba(130, 251, 255, 0.22);
 }
 
-function shadeColor(hex, amount) {
-    const { r, g, b } = hexToRgb(hex);
-    const adjust = (channel) => Math.max(0, Math.min(255, channel + amount));
-    return `rgb(${adjust(r)}, ${adjust(g)}, ${adjust(b)})`;
+.menuBtn {
+    background: linear-gradient(135deg, var(--cyan), var(--blue), var(--pink));
+    color: #03111d;
+    border: none;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow:
+        0 0 18px rgba(130, 251, 255, 0.9),
+        0 0 26px rgba(255, 98, 235, 0.7),
+        0 0 42px rgba(130, 251, 255, 0.22);
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+    width: 100%;
 }
 
-function drawBlock(x, y, color) {
-    const px = x * BLOCK_SIZE;
-    const py = y * BLOCK_SIZE;
-    const topColor = color;
-    const sideColor = shadeColor(color, -45);
-    const faceColor = shadeColor(color, -85);
-
-    ctx.save();
-    ctx.fillStyle = topColor;
-    ctx.fillRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
-
-    ctx.fillStyle = sideColor;
-    ctx.fillRect(px + BLOCK_SIZE - 6, py + 4, 4, BLOCK_SIZE - 8);
-    ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
-
-    ctx.fillStyle = faceColor;
-    ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
-
-    ctx.fillStyle = "rgba(255,255,255,0.6)";
-    ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 12, 5);
-
-    ctx.strokeStyle = "rgba(255,255,255,0.85)";
-    ctx.lineWidth = 1.2;
-    ctx.strokeRect(px + 2.5, py + 2.5, BLOCK_SIZE - 5, BLOCK_SIZE - 5);
-    ctx.restore();
+.menuBtn:hover {
+    transform: scale(1.03);
+    box-shadow:
+        0 0 24px rgba(130, 251, 255, 1),
+        0 0 34px rgba(255, 98, 235, 0.9),
+        0 0 50px rgba(130, 251, 255, 0.35);
 }
-
-function draw() {
-    ctx.fillStyle = "#030712";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    for (let r = 0; r < ROWS; r++) {
-        for (let c = 0; c < COLS; c++) {
-            if (grid[r][c] !== 0) {
-                drawBlock(c, r, grid[r][c]);
-            }
-        }
-    }
-
-    if (!gameOver && player.matrix) {
-        player.matrix.forEach((row, r) => {
-            row.forEach((value, c) => {
-                if (value !== 0) {
-                    drawBlock(player.pos.x + c, player.pos.y + r, player.color);
-                }
-            });
-        });
-    }
-}
-
-function updateUI() {
-    uiScore.textContent = `R ${score}`;
-    uiLevel.textContent = String(level);
-    uiLines.textContent = String(lines);
-}
-
-function showStartScreen() {
-    uiOverlay.innerHTML = `
-        <div class="revivedPanel">
-            <button class="menuBtn" id="startBtn">START STACKING</button>
-        </div>
-    `;
-
-    const startBtn = document.getElementById("startBtn");
-    startBtn.addEventListener("click", () => {
-        ensureAudio();
-        startNewGame();
-    });
-}
-
-function showGameOverScreen() {
-    uiOverlay.innerHTML = `
-        <div class="revivedPanel">
-            <h2 style="color: var(--pink); margin-bottom: 12px;">ROUTE BLOCKED!</h2>
-            <div class="reviveActions">
-                <button class="menuBtn" id="reviveBtn" style="font-size: 14px; padding: 12px 20px; width: 100%;">🎬 WATCH AD TO REVIVE</button>
-                <button class="menuBtn secondaryBtn" id="restartBtn" style="font-size: 13px; padding: 10px 20px; width: 100%;">TRY AGAIN</button>
-            </div>
-        </div>
-    `;
-
-    const reviveBtn = document.getElementById("reviveBtn");
-    reviveBtn.addEventListener("click", () => {
-        ensureAudio();
-        triggerAdRevive();
-    });
-
-    const restartBtn = document.getElementById("restartBtn");
-    restartBtn.addEventListener("click", () => {
-        ensureAudio();
-        startNewGame();
-    });
-}
-
-function triggerAdRevive() {
-    uiOverlay.innerHTML = `
-        <div class="revivedPanel">
-            <h2 style="color: var(--cyan); font-size: 18px; margin-bottom: 6px;">SPONSORED PARTNER AD</h2>
-            <p class="statLabel" style="margin-bottom: 12px;">Clearing lane & staying on Level ${level}...</p>
-            <div class="adBar">
-                <div class="adProgress" id="adProgress"></div>
-            </div>
-            <div style="font-size: 24px; font-weight: bold; color: var(--yellow); margin-top: 10px;" id="adTimer">3</div>
-        </div>
-    `;
-
-    playAdJingle();
-    
-    // Smoothly animate progress bar down
-    setTimeout(() => {
-        const bar = document.getElementById("adProgress");
-        if (bar) bar.style.width = "0%";
-    }, 50);
-
-    let timeLeft = 3;
-    const timerInterval = setInterval(() => {
-        timeLeft--;
-        const timerEl = document.getElementById("adTimer");
-        if (timerEl) timerEl.textContent = timeLeft;
-
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            
-            // Clear top 4 rows to grant breathing room while preserving level & score
-            for (let r = 3; r >= 0; r--) {
-                grid.splice(r, 1);
-                grid.unshift(Array(COLS).fill(0));
-            }
-
-            uiOverlay.innerHTML = "";
-            gameOver = false;
-            dropCounter = 0;
-            spawnPiece();
-        }
-    }, 1000);
-}
-
-document.addEventListener("keydown", event => {
-    if (gameOver) return;
-
-    if (event.code === "ArrowLeft" || event.code === "KeyA") {
-        playerMove(-1);
-    } else if (event.code === "ArrowRight" || event.code === "KeyD") {
-        playerMove(1);
-    } else if (event.code === "ArrowDown" || event.code === "KeyS") {
-        playerDrop();
-    } else if (event.code === "ArrowUp" || event.code === "KeyW") {
-        playerRotate();
-    }
-});
-
-function gameLoop(time = 0) {
-    const deltaTime = time - lastTime;
-    lastTime = time;
-
-    if (!gameOver) {
-        dropCounter += deltaTime;
-        if (dropCounter > dropInterval) {
-            playerDrop();
-        }
-    }
-
-    draw();
-    requestAnimationFrame(gameLoop);
-}
-
-showStartScreen();
-updateUI();
-requestAnimationFrame(gameLoop);

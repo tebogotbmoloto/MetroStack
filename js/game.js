@@ -20,7 +20,7 @@ let gameOver = true;
 let isPaused = false;
 let isReviving = false;
 let reviveAvailable = true;
-dropInterval = 500;
+let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
@@ -328,9 +328,10 @@ function finishRevive() {
 
 function startAdRevive() {
     if (isReviving || !reviveAvailable) return;
+
     isReviving = true;
     reviveAvailable = false;
-    gameOver = false;
+    gameOver = true;
 
     let timeLeft = REVIVE_SECONDS;
     uiOverlay.innerHTML = `
@@ -345,6 +346,7 @@ function startAdRevive() {
 
     const timerEl = document.getElementById("reviveTimer");
     const progressEl = document.getElementById("reviveProgress");
+
     const interval = setInterval(() => {
         timeLeft -= 1;
         timerEl.textContent = Math.max(0, timeLeft);
@@ -359,6 +361,7 @@ function startAdRevive() {
 
 function showRevivePrompt() {
     if (!reviveAvailable) return;
+
     uiOverlay.innerHTML = `
         <div class="revivePanel">
             <h2 style="color: #ff6b9a; font-size: 24px; margin-bottom: 10px; text-shadow: 0 0 12px rgba(255,107,154,0.9);">ROUTE BLOCKED!</h2>
@@ -371,6 +374,7 @@ function showRevivePrompt() {
     `;
 
     document.getElementById("watchAdBtn").onclick = startAdRevive;
+
     document.getElementById("restartBtn").onclick = () => {
         ensureAudio();
         uiOverlay.innerHTML = "";
@@ -439,6 +443,7 @@ document.addEventListener("keydown", event => {
     }
 
     if (gameOver || isPaused || isReviving) return;
+
     if (event.code === "ArrowLeft" || event.code === "KeyA") {
         playerMove(-1);
     } else if (event.code === "ArrowRight" || event.code === "KeyD") {

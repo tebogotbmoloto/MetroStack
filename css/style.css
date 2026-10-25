@@ -138,6 +138,50 @@ canvas {
     backdrop-filter: blur(2px);
 }
 
+.revivedPanel,
+.revivePanel {
+    text-align: center;
+    padding: 18px 20px;
+    border-radius: 16px;
+    background: rgba(7, 15, 27, 0.9);
+    border: 1px solid rgba(130, 251, 255, 0.8);
+    box-shadow: 0 0 18px rgba(130, 251, 255, 0.24), 0 0 32px rgba(255, 98, 235, 0.16);
+}
+
+.reviveActions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+.adBar {
+    width: 220px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid rgba(130, 251, 255, 0.4);
+    margin: 0 auto;
+}
+
+.adProgress {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--pink), var(--yellow));
+    border-radius: inherit;
+    box-shadow: 0 0 12px rgba(130, 251, 255, 0.8);
+    transition: width 0.9s ease;
+}
+
+.secondaryBtn {
+    background: linear-gradient(135deg, #1b2746, #101d35);
+    color: #edf7ff;
+    border: 1px solid rgba(130, 251, 255, 0.5);
+    box-shadow: 0 0 12px rgba(130, 251, 255, 0.22);
+}
+
 .menuBtn {
     background: linear-gradient(135deg, var(--cyan), var(--blue), var(--pink));
     color: #03111d;

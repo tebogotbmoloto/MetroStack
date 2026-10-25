@@ -16,6 +16,7 @@ let score = 0;
 let level = 1;
 let lines = 0;
 let gameOver = true;
+let isPaused = false;
 let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
@@ -114,6 +115,7 @@ function resetBoard() {
 
 function startNewGame() {
     uiOverlay.innerHTML = "";
+    isPaused = false;
     resetBoard();
     gameOver = false;
     spawnPiece();
@@ -130,6 +132,7 @@ function spawnPiece() {
 
     if (checkCollision()) {
         gameOver = true;
+        isPaused = false;
         player.matrix = null;
         playGameOverSound();
         showGameOverScreen();
@@ -193,7 +196,7 @@ function clearLines() {
 }
 
 function playerDrop() {
-    if (gameOver) return;
+    if (gameOver || isPaused) return;
     player.pos.y += 1;
 
     if (checkCollision()) {
@@ -209,7 +212,7 @@ function playerDrop() {
 }
 
 function playerMove(dir) {
-    if (gameOver) return;
+    if (gameOver || isPaused) return;
     player.pos.x += dir;
     if (checkCollision()) {
         player.pos.x -= dir;
@@ -233,7 +236,7 @@ function rotateMatrix(matrix) {
 }
 
 function playerRotate() {
-    if (gameOver || !player.matrix) return;
+    if (gameOver || isPaused || !player.matrix) return;
     const prevMatrix = player.matrix.map(row => row.slice());
     const prevX = player.pos.x;
     const rotated = rotateMatrix(player.matrix);
@@ -279,7 +282,7 @@ function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
     const topColor = color;
-    const sideColor = shadeColor(color, -25);  // Lighter shadow for maximum brightness
+    const sideColor = shadeColor(color, -25);
     const faceColor = shadeColor(color, -55);
 
     ctx.save();
@@ -293,7 +296,6 @@ function drawBlock(x, y, color) {
     ctx.fillStyle = faceColor;
     ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
 
-    // Extra bright specular highlight
     ctx.fillStyle = "rgba(255,255,255,0.75)";
     ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 12, 5);
 
@@ -344,6 +346,38 @@ function showStartScreen() {
         ensureAudio();
         startNewGame();
     });
+}
+
+function togglePause() {
+    if (gameOver) return;
+
+    isPaused = !isPaused;
+
+    if (isPaused) {
+        uiOverlay.innerHTML = `
+            <div class="revivedPanel">
+                <h2 style="color: var(--cyan); margin-bottom: 12px; font-size: 20px;">GAME PAUSED</h2>
+                <div class="reviveActions">
+                    <button class="menuBtn" id="resumeBtn">RESUME</button>
+                    <button class="menuBtn secondaryBtn" id="quitBtn">MAIN MENU</button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById("resumeBtn").addEventListener("click", () => {
+            togglePause();
+        });
+
+        document.getElementById("quitBtn").addEventListener("click", () => {
+            isPaused = false;
+            gameOver = true;
+            uiOverlay.innerHTML = "";
+            showStartScreen();
+        });
+    } else {
+        uiOverlay.innerHTML = "";
+        lastTime = performance.now(); // Reset delta timer to prevent huge drops upon resume
+    }
 }
 
 function showGameOverScreen() {
@@ -398,11 +432,12 @@ function triggerAdRevive() {
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             
-            // FULL BOARD RESET FROM BOTTOM, keeping current level and score intact!
+            // Full board reset from bottom, keeping current level and score intact
             grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 
             uiOverlay.innerHTML = "";
             gameOver = false;
+            isPaused = false;
             dropCounter = 0;
             spawnPiece();
         }
@@ -410,7 +445,12 @@ function triggerAdRevive() {
 }
 
 document.addEventListener("keydown", event => {
-    if (gameOver) return;
+    if (event.code === "KeyP" || event.code === "Escape") {
+        togglePause();
+        return;
+    }
+
+    if (gameOver || isPaused) return;
 
     if (event.code === "ArrowLeft" || event.code === "KeyA") {
         playerMove(-1);
@@ -427,7 +467,7 @@ function gameLoop(time = 0) {
     const deltaTime = time - lastTime;
     lastTime = time;
 
-    if (!gameOver) {
+    if (!gameOver && !isPaused) {
         dropCounter += deltaTime;
         if (dropCounter > dropInterval) {
             playerDrop();

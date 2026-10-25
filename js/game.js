@@ -122,12 +122,14 @@ function spawnPiece() {
 
     if (checkCollision()) {
         gameOver = true;
+        player.matrix = null; // Clear active piece reference to prevent lingering collision checks
         playGameOverSound();
         showGameOverScreen();
     }
 }
 
 function checkCollision() {
+    if (!player.matrix) return false;
     for (let r = 0; r < player.matrix.length; r++) {
         for (let c = 0; c < player.matrix[r].length; c++) {
             if (player.matrix[r][c] === 0) continue;
@@ -143,6 +145,7 @@ function checkCollision() {
 }
 
 function mergePiece() {
+    if (!player.matrix) return;
     player.matrix.forEach((row, r) => {
         row.forEach((value, c) => {
             if (value !== 0) {
@@ -182,19 +185,23 @@ function clearLines() {
 }
 
 function playerDrop() {
+    if (gameOver) return;
     player.pos.y += 1;
 
     if (checkCollision()) {
         player.pos.y -= 1;
         mergePiece();
         clearLines();
-        spawnPiece();
+        if (!gameOver) {
+            spawnPiece();
+        }
     }
 
     dropCounter = 0;
 }
 
 function playerMove(dir) {
+    if (gameOver) return;
     player.pos.x += dir;
     if (checkCollision()) {
         player.pos.x -= dir;
@@ -218,6 +225,7 @@ function rotateMatrix(matrix) {
 }
 
 function playerRotate() {
+    if (gameOver || !player.matrix) return;
     const prevMatrix = player.matrix.map(row => row.slice());
     const prevX = player.pos.x;
     const rotated = rotateMatrix(player.matrix);

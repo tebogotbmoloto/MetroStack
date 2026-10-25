@@ -21,15 +21,15 @@ let dropCounter = 0;
 let lastTime = 0;
 
 const SHAPES = [
-    { name: "I", shape: [[1, 1, 1, 1]], color: "#6EF8FF" },
-    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFE75A" },
-    { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF78F0" },
-    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF5A85" },
-    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#7CFF9A" },
-    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#78D8FF" },
-    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FFB14A" },
-    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#FF6BFF" },
-    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#7C7CFF" }
+    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Vivid Neon Cyan
+    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFEE00" }, // Electric Yellow
+    { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Neon Magenta
+    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF1744" }, // Bright Hot Red
+    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00E676" }, // Neon Mint Green
+    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#00B0FF" }, // Bright Azure Blue
+    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF9100" }, // Vivid Tangerine
+    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#E040FB" }, // Bright Orchid
+    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#7C4DFF" }  // Electric Violet
 ];
 
 let player = {
@@ -93,6 +93,14 @@ function playGameOverSound() {
     setTimeout(() => playTone(120, 0.22, "sawtooth", 0.05, -25), 120);
 }
 
+function playAdJingle() {
+    ensureAudio();
+    playTone(440, 0.1, "sine", 0.04, 100);
+    setTimeout(() => playTone(554, 0.1, "sine", 0.04, 100), 100);
+    setTimeout(() => playTone(659, 0.15, "sine", 0.04, 150), 200);
+    setTimeout(() => playTone(880, 0.3, "sine", 0.05, 200), 350);
+}
+
 function resetBoard() {
     grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
     score = 0;
@@ -122,7 +130,7 @@ function spawnPiece() {
 
     if (checkCollision()) {
         gameOver = true;
-        player.matrix = null; // Clear active piece reference to prevent lingering collision checks
+        player.matrix = null;
         playGameOverSound();
         showGameOverScreen();
     }
@@ -271,8 +279,8 @@ function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
     const topColor = color;
-    const sideColor = shadeColor(color, -38);
-    const faceColor = shadeColor(color, -70);
+    const sideColor = shadeColor(color, -45);
+    const faceColor = shadeColor(color, -85);
 
     ctx.save();
     ctx.fillStyle = topColor;
@@ -285,17 +293,17 @@ function drawBlock(x, y, color) {
     ctx.fillStyle = faceColor;
     ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
 
-    ctx.fillStyle = "rgba(255,255,255,0.42)";
-    ctx.fillRect(px + 5, py + 5, BLOCK_SIZE - 12, 6);
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 12, 5);
 
-    ctx.strokeStyle = "rgba(255,255,255,0.8)";
+    ctx.strokeStyle = "rgba(255,255,255,0.85)";
     ctx.lineWidth = 1.2;
     ctx.strokeRect(px + 2.5, py + 2.5, BLOCK_SIZE - 5, BLOCK_SIZE - 5);
     ctx.restore();
 }
 
 function draw() {
-    ctx.fillStyle = "#060d1b";
+    ctx.fillStyle = "#030712";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (let r = 0; r < ROWS; r++) {
@@ -335,17 +343,56 @@ function showStartScreen() {
 
 function showGameOverScreen() {
     uiOverlay.innerHTML = `
-        <div style="text-align: center;">
-            <h2 style="color: #ff6b9a; font-size: 22px; margin-bottom: 15px;">ROUTE BLOCKED!</h2>
-            <button class="menuBtn" id="restartBtn">TRY AGAIN</button>
+        <div style="text-align: center; max-width: 260px;">
+            <h2 style="color: #ff6b9a; font-size: 20px; margin-bottom: 10px;">ROUTE BLOCKED!</h2>
+            <button class="menuBtn" id="reviveBtn" style="background: linear-gradient(135deg, #FFB14A, #FF78F0); margin-bottom: 10px;">🎬 WATCH AD TO REVIVE</button>
+            <button class="menuBtn" id="restartBtn" style="font-size: 14px; padding: 10px;">TRY AGAIN</button>
         </div>
     `;
+
+    const reviveBtn = document.getElementById("reviveBtn");
+    reviveBtn.addEventListener("click", () => {
+        ensureAudio();
+        triggerAdRevive();
+    });
 
     const restartBtn = document.getElementById("restartBtn");
     restartBtn.addEventListener("click", () => {
         ensureAudio();
         startNewGame();
     });
+}
+
+function triggerAdRevive() {
+    uiOverlay.innerHTML = `
+        <div style="text-align: center;">
+            <h3 style="color: #00FFFF; font-size: 16px; margin-bottom: 8px;">SPONSORED PARTNER AD</h3>
+            <p style="font-size: 12px; color: #aaa; margin-bottom: 15px;">Clearing traffic lane & staying on Level ${level}...</p>
+            <div style="font-size: 24px; font-weight: bold; color: #FFEE00;" id="adTimer">3</div>
+        </div>
+    `;
+
+    playAdJingle();
+    let timeLeft = 3;
+    const timerInterval = setInterval(() => {
+        timeLeft--;
+        const timerEl = document.getElementById("adTimer");
+        if (timerEl) timerEl.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            
+            for (let r = 3; r >= 0; r--) {
+                grid.splice(r, 1);
+                grid.unshift(Array(COLS).fill(0));
+            }
+
+            uiOverlay.innerHTML = "";
+            gameOver = false;
+            dropCounter = 0;
+            spawnPiece();
+        }
+    }, 1000);
 }
 
 document.addEventListener("keydown", event => {

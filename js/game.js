@@ -21,15 +21,15 @@ let dropCounter = 0;
 let lastTime = 0;
 
 const SHAPES = [
-    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Vivid Neon Cyan
-    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFEE00" }, // Electric Yellow
+    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Ultra-Bright Cyan
+    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFFF00" }, // Pure Electric Yellow
     { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Neon Magenta
-    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF1744" }, // Bright Hot Red
-    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00E676" }, // Neon Mint Green
-    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#00B0FF" }, // Bright Azure Blue
-    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF9100" }, // Vivid Tangerine
-    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#E040FB" }, // Bright Orchid
-    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#7C4DFF" }  // Electric Violet
+    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF2A55" }, // Vivid Neon Red
+    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00FF66" }, // Neon Lime Green
+    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#00A2FF" }, // Bright Sky Blue
+    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF7700" }, // Vibrant Neon Orange
+    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#EE33FF" }, // Bright Orchid
+    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#9955FF" }  // Electric Purple
 ];
 
 let player = {
@@ -279,8 +279,8 @@ function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
     const topColor = color;
-    const sideColor = shadeColor(color, -45);
-    const faceColor = shadeColor(color, -85);
+    const sideColor = shadeColor(color, -25);  // Lighter shadow for maximum brightness
+    const faceColor = shadeColor(color, -55);
 
     ctx.save();
     ctx.fillStyle = topColor;
@@ -293,11 +293,12 @@ function drawBlock(x, y, color) {
     ctx.fillStyle = faceColor;
     ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
 
-    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    // Extra bright specular highlight
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
     ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 12, 5);
 
-    ctx.strokeStyle = "rgba(255,255,255,0.85)";
-    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = "rgba(255,255,255,0.95)";
+    ctx.lineWidth = 1.4;
     ctx.strokeRect(px + 2.5, py + 2.5, BLOCK_SIZE - 5, BLOCK_SIZE - 5);
     ctx.restore();
 }
@@ -373,7 +374,7 @@ function triggerAdRevive() {
     uiOverlay.innerHTML = `
         <div class="revivedPanel">
             <h2 style="color: var(--cyan); font-size: 18px; margin-bottom: 6px;">SPONSORED PARTNER AD</h2>
-            <p class="statLabel" style="margin-bottom: 12px;">Clearing lane & staying on Level ${level}...</p>
+            <p class="statLabel" style="margin-bottom: 12px;">Resetting board on Level ${level}...</p>
             <div class="adBar">
                 <div class="adProgress" id="adProgress"></div>
             </div>
@@ -397,10 +398,8 @@ function triggerAdRevive() {
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             
-            for (let r = 3; r >= 0; r--) {
-                grid.splice(r, 1);
-                grid.unshift(Array(COLS).fill(0));
-            }
+            // FULL BOARD RESET FROM BOTTOM, keeping current level and score intact!
+            grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 
             uiOverlay.innerHTML = "";
             gameOver = false;

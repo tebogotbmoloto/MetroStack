@@ -264,18 +264,22 @@ function drawBlock(x, y, color) {
     const py = y * BLOCK_SIZE;
 
     ctx.save();
-    ctx.shadowBlur = 8;
+    // High-intensity neon aura glow
+    ctx.shadowBlur = 12;
     ctx.shadowColor = color;
 
+    // Solid vivid neon fill
     ctx.fillStyle = color;
     ctx.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 
-    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.fillRect(px + 3, py + 3, BLOCK_SIZE - 12, 5);
+    // Brilliant white inner core for extreme brightness and clarity
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 8, 4);
 
+    // Crisp high-contrast outer border
     ctx.strokeStyle = "#FFFFFF";
-    ctx.lineWidth = 1.5;
-    ctx.strokeRect(px + 1.5, py + 1.5, BLOCK_SIZE - 3, BLOCK_SIZE - 3);
+    ctx.lineWidth = 1.8;
+    ctx.strokeRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
     
     ctx.restore();
 }

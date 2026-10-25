@@ -10,6 +10,7 @@ const uiLines = document.getElementById("lines");
 const ROWS = 20;
 const COLS = 10;
 const BLOCK_SIZE = 30;
+const REVIVE_SECONDS = 3;
 
 let grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 let score = 0;
@@ -17,23 +18,25 @@ let level = 1;
 let lines = 0;
 let gameOver = true;
 let isPaused = false;
+let isReviving = false;
+let reviveAvailable = true;
 let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
 const SHAPES = [
-    { shape: [[1, 1, 1, 1]], color: "#7AF9FF" },
-    { shape: [[1, 1], [1, 1]], color: "#FFE76A" },
-    { shape: [[0, 1, 0], [1, 1, 1]], color: "#FF6EEB" },
-    { shape: [[1, 1, 0], [0, 1, 1]], color: "#FF5D73" },
-    { shape: [[0, 1, 1], [1, 1, 0]], color: "#70FF9B" },
-    { shape: [[1, 0, 0], [1, 1, 1]], color: "#7CC9FF" },
-    { shape: [[0, 0, 1], [1, 1, 1]], color: "#FFB347" },
-    { shape: [[1, 1, 1], [1, 1, 0]], color: "#C98BFF" },
-    { shape: [[1, 1, 1], [1, 0, 1]], color: "#44F0D6" },
-    { shape: [[1, 0, 1], [1, 1, 1]], color: "#FF8A5B" },
-    { shape: [[1, 1, 1], [0, 1, 0], [0, 1, 0]], color: "#FFFD78" },
-    { shape: [[1, 1, 0], [1, 0, 1], [0, 1, 1]], color: "#8FF7FF" }
+    { shape: [[1, 1, 1, 1]], color: "#8AFBFF" },
+    { shape: [[1, 1], [1, 1]], color: "#FFF26A" },
+    { shape: [[0, 1, 0], [1, 1, 1]], color: "#FF7AF3" },
+    { shape: [[1, 1, 0], [0, 1, 1]], color: "#FF5E81" },
+    { shape: [[0, 1, 1], [1, 1, 0]], color: "#7EFF9D" },
+    { shape: [[1, 0, 0], [1, 1, 1]], color: "#7CCBFF" },
+    { shape: [[0, 0, 1], [1, 1, 1]], color: "#FFB75D" },
+    { shape: [[1, 1, 1], [1, 1, 0]], color: "#D59BFF" },
+    { shape: [[1, 1, 1], [1, 0, 1]], color: "#6DF7D7" },
+    { shape: [[1, 0, 1], [1, 1, 1]], color: "#FF9B68" },
+    { shape: [[1, 1, 1], [0, 1, 0], [0, 1, 0]], color: "#FFF980" },
+    { shape: [[1, 1, 0], [1, 0, 1], [0, 1, 1]], color: "#A5F7FF" }
 ];
 
 let player = {
@@ -94,6 +97,17 @@ function playGameOverSound() {
     ensureAudio();
     playTone(180, 0.18, "sawtooth", 0.05, -30);
     setTimeout(() => playTone(120, 0.22, "sawtooth", 0.05, -25), 120);
+}
+
+function clearBoardForNewGame() {
+    grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    score = 0;
+    lines = 0;
+    level = 1;
+    dropInterval = 500;
+    dropCounter = 0;
+    lastTime = 0;
+    updateUI();
 }
 
 function spawnPiece() {
@@ -234,12 +248,12 @@ function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
     const topColor = color;
-    const sideColor = shadeColor(color, -26);
-    const faceColor = shadeColor(color, -52);
+    const sideColor = shadeColor(color, -18);
+    const faceColor = shadeColor(color, -42);
 
     ctx.save();
     ctx.shadowColor = color;
-    ctx.shadowBlur = 16;
+    ctx.shadowBlur = 18;
     ctx.fillStyle = topColor;
     ctx.fillRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
 
@@ -251,11 +265,11 @@ function drawBlock(x, y, color) {
     ctx.fillStyle = faceColor;
     ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
 
-    ctx.fillStyle = "rgba(255,255,255,0.58)";
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
     ctx.fillRect(px + 5, py + 5, BLOCK_SIZE - 12, 6);
 
-    ctx.strokeStyle = "rgba(255,255,255,0.9)";
-    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = "rgba(255,255,255,0.96)";
+    ctx.lineWidth = 1.3;
     ctx.strokeRect(px + 2.5, py + 2.5, BLOCK_SIZE - 5, BLOCK_SIZE - 5);
     ctx.restore();
 }
@@ -289,6 +303,84 @@ function updateUI() {
     uiLines.innerText = lines;
 }
 
+function finishRevive() {
+    uiOverlay.innerHTML = "";
+    isReviving = false;
+    gameOver = false;
+    isPaused = false;
+
+    for (let r = ROWS - 3; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            grid[r][c] = 0;
+        }
+    }
+
+    if (!player.matrix) {
+        spawnPiece();
+    } else {
+        player.pos.y = 0;
+        player.pos.x = Math.floor(COLS / 2) - Math.floor(player.matrix[0].length / 2);
+    }
+
+    lastTime = performance.now();
+}
+
+function startAdRevive() {
+    if (isReviving || !reviveAvailable) return;
+    isReviving = true;
+    reviveAvailable = false;
+
+    let timeLeft = REVIVE_SECONDS;
+    uiOverlay.innerHTML = `
+        <div class="revivePanel">
+            <h2 style="color: #8afbff; font-size: 22px; margin-bottom: 12px; text-shadow: 0 0 12px rgba(138, 251, 255, 0.9);">REVIVE AD</h2>
+            <p style="color: #dfeeff; margin-bottom: 12px;">Reviving in <span id="reviveTimer">${timeLeft}</span>s</p>
+            <div class="adBar">
+                <div class="adProgress" id="reviveProgress"></div>
+            </div>
+        </div>
+    `;
+
+    const timerEl = document.getElementById("reviveTimer");
+    const progressEl = document.getElementById("reviveProgress");
+    const interval = setInterval(() => {
+        timeLeft -= 1;
+        timerEl.textContent = Math.max(0, timeLeft);
+        progressEl.style.width = `${(Math.max(0, timeLeft) / REVIVE_SECONDS) * 100}%`;
+
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            setTimeout(() => finishRevive(), 250);
+        }
+    }, 1000);
+}
+
+function showRevivePrompt() {
+    if (!reviveAvailable) return;
+    uiOverlay.innerHTML = `
+        <div class="revivePanel">
+            <h2 style="color: #ff6b9a; font-size: 24px; margin-bottom: 10px; text-shadow: 0 0 12px rgba(255,107,154,0.9);">ROUTE BLOCKED!</h2>
+            <p style="color: #edf7ff; margin-bottom: 16px;">Watch an ad to revive your run.</p>
+            <div class="reviveActions">
+                <button class="menuBtn" id="watchAdBtn">WATCH AD TO REVIVE</button>
+                <button class="menuBtn secondaryBtn" id="restartBtn">TRY AGAIN</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById("watchAdBtn").onclick = startAdRevive;
+    document.getElementById("restartBtn").onclick = () => {
+        ensureAudio();
+        uiOverlay.innerHTML = "";
+        clearBoardForNewGame();
+        gameOver = false;
+        isPaused = false;
+        isReviving = false;
+        reviveAvailable = true;
+        spawnPiece();
+    };
+}
+
 function showPauseScreen() {
     uiOverlay.innerHTML = `
         <div style="text-align: center;">
@@ -317,40 +409,23 @@ function togglePause() {
 
 function showStartScreen() {
     isPaused = false;
+    isReviving = false;
+    reviveAvailable = true;
     uiOverlay.innerHTML = `<button class="menuBtn" id="startBtn">START STACKING</button>`;
     document.getElementById("startBtn").onclick = () => {
         ensureAudio();
         uiOverlay.innerHTML = "";
-        grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-        score = 0;
-        lines = 0;
-        level = 1;
-        updateUI();
+        clearBoardForNewGame();
         gameOver = false;
         isPaused = false;
+        isReviving = false;
+        reviveAvailable = true;
         spawnPiece();
     };
 }
 
 function showGameOverScreen() {
-    uiOverlay.innerHTML = `
-        <div style="text-align: center;">
-            <h2 style="color: #ff6b9a; font-size: 22px; margin-bottom: 15px; text-shadow: 0 0 12px rgba(255,107,154,0.9);">ROUTE BLOCKED!</h2>
-            <button class="menuBtn" id="restartBtn">TRY AGAIN</button>
-        </div>
-    `;
-    document.getElementById("restartBtn").onclick = () => {
-        ensureAudio();
-        uiOverlay.innerHTML = "";
-        grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-        score = 0;
-        lines = 0;
-        level = 1;
-        updateUI();
-        gameOver = false;
-        isPaused = false;
-        spawnPiece();
-    };
+    showRevivePrompt();
 }
 
 document.addEventListener("keydown", event => {
@@ -361,7 +436,7 @@ document.addEventListener("keydown", event => {
         return;
     }
 
-    if (gameOver || isPaused) return;
+    if (gameOver || isPaused || isReviving) return;
     if (event.code === "ArrowLeft" || event.code === "KeyA") {
         playerMove(-1);
     } else if (event.code === "ArrowRight" || event.code === "KeyD") {
@@ -377,7 +452,7 @@ function gameLoop(time = 0) {
     const deltaTime = time - lastTime;
     lastTime = time;
 
-    if (!gameOver && !isPaused) {
+    if (!gameOver && !isPaused && !isReviving) {
         dropCounter += deltaTime;
         if (dropCounter > dropInterval) {
             playerDrop();

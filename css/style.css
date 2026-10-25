@@ -1,5 +1,5 @@
 body {
-    background: #010409;
+    background: #030712;
     color: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     display: flex;
@@ -21,7 +21,7 @@ body {
     width: 100%;
     height: 100%;
     max-width: 450px;
-    background: #010409;
+    background: #030712;
     padding: 10px;
     box-sizing: border-box;
 }
@@ -37,12 +37,13 @@ body {
 }
 
 .panel {
-    background: #0d1629;
-    border: 2px solid #00ffff;
+    background: #111c34;
+    border: 2px solid #22d3ee;
     padding: 6px 8px;
     border-radius: 8px;
     flex: 1;
     text-align: center;
+    box-shadow: inset 0 0 6px rgba(34, 211, 238, 0.2);
 }
 
 .panel h2, .subtitle {
@@ -51,28 +52,30 @@ body {
 
 .statLabel {
     font-size: 8px;
-    color: #a5f3fc;
+    color: #67e8f9;
     letter-spacing: 0.5px;
+    font-weight: 700;
 }
 
 .statValue {
     font-size: 14px;
-    font-weight: 800;
-    color: #ffd700;
+    font-weight: 900;
+    color: #facc15; /* High-contrast taxi yellow */
+    text-shadow: 0 0 4px rgba(250, 204, 21, 0.4);
 }
 
 #canvasWrapper {
     position: relative;
-    border: 3px solid #00ffff;
+    border: 3px solid #22d3ee;
     border-radius: 10px;
     overflow: hidden;
-    background: #000000;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    background: #070b19;
+    box-shadow: 0 0 25px rgba(34, 211, 238, 0.4), inset 0 0 15px rgba(0, 0, 0, 0.8);
 }
 
 canvas {
     display: block;
-    background: #000000;
+    background: #070b19;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     width: 290px;
@@ -90,36 +93,39 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(1, 4, 9, 0.9);
+    background: rgba(3, 7, 18, 0.92);
     z-index: 10;
 }
 
 .revivedPanel {
-    background: #0d1629;
-    border: 2px solid #00ffff;
+    background: #111c34;
+    border: 2px solid #22d3ee;
     padding: 20px;
     border-radius: 12px;
     text-align: center;
     width: 80%;
     max-width: 260px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
 .menuBtn {
-    background: linear-gradient(135deg, #00ffff, #0088ff);
+    background: linear-gradient(135deg, #22d3ee, #0284c7);
     color: #030712;
     border: none;
     padding: 12px 20px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 900;
     border-radius: 8px;
     cursor: pointer;
     width: 100%;
+    box-shadow: 0 4px 12px rgba(34, 211, 238, 0.3);
 }
 
 .secondaryBtn {
-    background: linear-gradient(135deg, #ff007f, #7700ff);
+    background: linear-gradient(135deg, #db2777, #7c3aed);
     color: #ffffff;
     margin-top: 10px;
+    box-shadow: 0 4px 12px rgba(219, 39, 119, 0.3);
 }
 
 .reviveActions {
@@ -140,13 +146,14 @@ canvas {
 .adProgress {
     width: 100%;
     height: 100%;
-    background: #00ffff;
+    background: #22d3ee;
 }
 
 #touchControls button {
-    background: linear-gradient(135deg, #38bdf8, #818cf8);
-    color: #030712;
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #ffffff;
     border: 2px solid #ffffff;
     font-weight: bold;
     border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }

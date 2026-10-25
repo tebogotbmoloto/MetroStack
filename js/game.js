@@ -21,17 +21,17 @@ let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
-// High-vibrancy arcade color palette
+// High-voltage hyper-saturated neon color palette
 const SHAPES = [
     { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Cyan
-    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFD700" }, // Gold Yellow
+    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFEE00" }, // Ultra-Yellow
     { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Magenta
-    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF2A55" }, // Red
-    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00FF66" }, // Neon Lime Green
-    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#00A2FF" }, // Electric Blue
-    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF7700" }, // Bright Orange
-    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#EE33FF" }, // Purple
-    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#9955FF" }  // Violet
+    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF0044" }, // Bright Neon Red
+    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00FF44" }, // Neon Green
+    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#0088FF" }, // Vivid Blue
+    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF5500" }, // Bright Orange
+    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#E000FF" }, // Electric Purple
+    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#8800FF" }  // Violet
 ];
 
 let player = {
@@ -266,31 +266,35 @@ function playerRotate() {
     playRotateSound();
 }
 
-// Textured 3D Beveled Arcade Block Rendering (matching your reference style)
+// Ultra-bright glowing block renderer with checkered texture & illuminated white core
 function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
 
     ctx.save();
     
-    // Outer luminous glow
-    ctx.shadowBlur = 12;
+    // Intense glowing halo
+    ctx.shadowBlur = 18;
     ctx.shadowColor = color;
 
-    // Solid base fill
+    // Outer rich color frame
     ctx.fillStyle = color;
     ctx.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 
-    // Inner dotted/checkered arcade texture
-    ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+    // Dotted arcade texture pattern
+    ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
     for (let i = 4; i < BLOCK_SIZE - 4; i += 4) {
         for (let j = 4; j < BLOCK_SIZE - 4; j += 4) {
             ctx.fillRect(px + i, py + j, 2, 2);
         }
     }
 
-    // Top-left glossy 3D bevel highlight
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+    // Pure white center core for maximum phone screen brightness
+    ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
+    ctx.fillRect(px + 8, py + 8, BLOCK_SIZE - 16, BLOCK_SIZE - 16);
+
+    // Glossy 3D top-left bevel
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.95)";
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(px + 2, py + BLOCK_SIZE - 2);
@@ -298,8 +302,9 @@ function drawBlock(x, y, color) {
     ctx.lineTo(px + BLOCK_SIZE - 2, py + 2);
     ctx.stroke();
 
-    // Bottom-right shadow bevel
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.65)";
+    // Dark bottom-right bevel shadow
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.8)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(px + 2, py + BLOCK_SIZE - 2);
     ctx.lineTo(px + BLOCK_SIZE - 2, py + BLOCK_SIZE - 2);
@@ -441,68 +446,4 @@ function triggerAdRevive() {
 
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-            uiOverlay.innerHTML = "";
-            gameOver = false;
-            isPaused = false;
-            dropCounter = 0;
-            spawnPiece();
-        }
-    }, 1000);
-}
-
-// Keyboard controls
-document.addEventListener("keydown", event => {
-    if (event.code === "KeyP" || event.code === "Escape") {
-        togglePause();
-        return;
-    }
-    if (gameOver || isPaused) return;
-
-    if (event.code === "ArrowLeft" || event.code === "KeyA") playerMove(-1);
-    else if (event.code === "ArrowRight" || event.code === "KeyD") playerMove(1);
-    else if (event.code === "ArrowDown" || event.code === "KeyS") playerDrop();
-    else if (event.code === "ArrowUp" || event.code === "KeyW") playerRotate();
-});
-
-// Instant Mobile Touch Controls
-const btnLeft = document.getElementById("btnLeft");
-const btnRight = document.getElementById("btnRight");
-const btnRotate = document.getElementById("btnRotate");
-const btnDrop = document.getElementById("btnDrop");
-
-if (btnLeft) {
-    btnLeft.addEventListener("touchstart", (e) => { e.preventDefault(); playerMove(-1); });
-    btnLeft.addEventListener("click", () => playerMove(-1));
-}
-if (btnRight) {
-    btnRight.addEventListener("touchstart", (e) => { e.preventDefault(); playerMove(1); });
-    btnRight.addEventListener("click", () => playerMove(1));
-}
-if (btnRotate) {
-    btnRotate.addEventListener("touchstart", (e) => { e.preventDefault(); playerRotate(); });
-    btnRotate.addEventListener("click", () => playerRotate());
-}
-if (btnDrop) {
-    btnDrop.addEventListener("touchstart", (e) => { e.preventDefault(); playerDrop(); });
-    btnDrop.addEventListener("click", () => playerDrop());
-}
-
-function gameLoop(time = 0) {
-    const deltaTime = time - lastTime;
-    lastTime = time;
-
-    if (!gameOver && !isPaused) {
-        dropCounter += deltaTime;
-        if (dropCounter > dropInterval) {
-            playerDrop();
-        }
-    }
-
-    draw();
-    requestAnimationFrame(gameLoop);
-}
-
-showStartScreen();
-updateUI();
-requestAnimationFrame(gameLoop);
+            grid = Array.from({ length: ROWS }, () => Array(COLS

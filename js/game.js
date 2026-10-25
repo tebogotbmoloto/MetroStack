@@ -22,7 +22,7 @@ let dropCounter = 0;
 let lastTime = 0;
 
 const SHAPES = [
-    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Ultra-Bright Cyan
+    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Ultra-Bright Neon Cyan
     { name: "O", shape: [[1, 1], [1, 1]], color: "#FFFF00" }, // Pure Electric Yellow
     { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Neon Magenta
     { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF2A55" }, // Vivid Neon Red
@@ -281,27 +281,20 @@ function shadeColor(hex, amount) {
 function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
-    const topColor = color;
-    const sideColor = shadeColor(color, -25);
-    const faceColor = shadeColor(color, -55);
-
+    
+    // High-luminance rendering so blocks look glowing and bright
     ctx.save();
-    ctx.fillStyle = topColor;
-    ctx.fillRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
+    ctx.fillStyle = color;
+    ctx.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 
-    ctx.fillStyle = sideColor;
-    ctx.fillRect(px + BLOCK_SIZE - 6, py + 4, 4, BLOCK_SIZE - 8);
-    ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
+    // Glossy top-left highlight
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.fillRect(px + 3, py + 3, BLOCK_SIZE - 10, 6);
 
-    ctx.fillStyle = faceColor;
-    ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
-
-    ctx.fillStyle = "rgba(255,255,255,0.75)";
-    ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 12, 5);
-
-    ctx.strokeStyle = "rgba(255,255,255,0.95)";
-    ctx.lineWidth = 1.4;
-    ctx.strokeRect(px + 2.5, py + 2.5, BLOCK_SIZE - 5, BLOCK_SIZE - 5);
+    // Bright outer border
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(px + 1.5, py + 1.5, BLOCK_SIZE - 3, BLOCK_SIZE - 3);
     ctx.restore();
 }
 
@@ -317,7 +310,7 @@ function draw() {
         }
     }
 
-    if (!gameOver && player.matrix) {
+    if (!gameOver && !isPaused && player.matrix) {
         player.matrix.forEach((row, r) => {
             row.forEach((value, c) => {
                 if (value !== 0) {
@@ -376,7 +369,7 @@ function togglePause() {
         });
     } else {
         uiOverlay.innerHTML = "";
-        lastTime = performance.now(); // Reset delta timer to prevent huge drops upon resume
+        lastTime = performance.now();
     }
 }
 
@@ -407,12 +400,12 @@ function showGameOverScreen() {
 function triggerAdRevive() {
     uiOverlay.innerHTML = `
         <div class="revivedPanel">
-            <h2 style="color: var(--cyan); font-size: 18px; margin-bottom: 6px;">SPONSORED PARTNER AD</h2>
+            <h2 style="color: var(--cyan); font-size: 16px; margin-bottom: 6px;">SPONSORED PARTNER AD</h2>
             <p class="statLabel" style="margin-bottom: 12px;">Resetting board on Level ${level}...</p>
             <div class="adBar">
-                <div class="adProgress" id="adProgress"></div>
+                <div class="adProgress" id="adProgress" style="transition: width 10s linear;"></div>
             </div>
-            <div style="font-size: 24px; font-weight: bold; color: var(--yellow); margin-top: 10px;" id="adTimer">3</div>
+            <div style="font-size: 28px; font-weight: bold; color: var(--yellow); margin-top: 10px;" id="adTimer">10</div>
         </div>
     `;
 
@@ -423,7 +416,7 @@ function triggerAdRevive() {
         if (bar) bar.style.width = "0%";
     }, 50);
 
-    let timeLeft = 3;
+    let timeLeft = 10;
     const timerInterval = setInterval(() => {
         timeLeft--;
         const timerEl = document.getElementById("adTimer");
@@ -432,7 +425,7 @@ function triggerAdRevive() {
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             
-            // Full board reset from bottom, keeping current level and score intact
+            // Full board reset from bottom, keeping current level and score intact!
             grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 
             uiOverlay.innerHTML = "";

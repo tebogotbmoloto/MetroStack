@@ -21,17 +21,17 @@ let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
-// High-voltage hyper-saturated neon color palette
+// High-saturation neon arcade palette
 const SHAPES = [
     { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Cyan
-    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFEE00" }, // Ultra-Yellow
+    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFEE00" }, // Yellow
     { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Magenta
-    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF0044" }, // Bright Neon Red
-    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00FF44" }, // Neon Green
-    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#0088FF" }, // Vivid Blue
-    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF5500" }, // Bright Orange
-    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#E000FF" }, // Electric Purple
-    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#8800FF" }  // Violet
+    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF1155" }, // Red
+    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00FF55" }, // Green
+    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#0088FF" }, // Blue
+    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF6600" }, // Orange
+    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#DD22FF" }, // Purple
+    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#9933FF" }  // Violet
 ];
 
 let player = {
@@ -266,56 +266,50 @@ function playerRotate() {
     playRotateSound();
 }
 
-// Ultra-bright glowing block renderer with checkered texture & illuminated white core
+// Solid opaque high-brightness arcade block renderer with crisp 3D borders
 function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
 
     ctx.save();
     
-    // Intense glowing halo
-    ctx.shadowBlur = 18;
+    // Soft glowing halo
+    ctx.shadowBlur = 12;
     ctx.shadowColor = color;
 
-    // Outer rich color frame
+    // Solid vivid base fill
     ctx.fillStyle = color;
-    ctx.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+    ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
 
-    // Dotted arcade texture pattern
-    ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
-    for (let i = 4; i < BLOCK_SIZE - 4; i += 4) {
-        for (let j = 4; j < BLOCK_SIZE - 4; j += 4) {
-            ctx.fillRect(px + i, py + j, 2, 2);
-        }
-    }
+    // Inner bright core highlight for maximum intensity
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 8, BLOCK_SIZE - 8);
 
-    // Pure white center core for maximum phone screen brightness
-    ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
-    ctx.fillRect(px + 8, py + 8, BLOCK_SIZE - 16, BLOCK_SIZE - 16);
+    // Inner color fill to maintain rich saturation
+    ctx.fillStyle = color;
+    ctx.fillRect(px + 6, py + 6, BLOCK_SIZE - 12, BLOCK_SIZE - 12);
 
-    // Glossy 3D top-left bevel
+    // Crisp 3D Bevel borders
     ctx.strokeStyle = "rgba(255, 255, 255, 0.95)";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.moveTo(px + 2, py + BLOCK_SIZE - 2);
-    ctx.lineTo(px + 2, py + 2);
-    ctx.lineTo(px + BLOCK_SIZE - 2, py + 2);
+    ctx.moveTo(px, py + BLOCK_SIZE);
+    ctx.lineTo(px, py);
+    ctx.lineTo(px + BLOCK_SIZE, py);
     ctx.stroke();
 
-    // Dark bottom-right bevel shadow
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.8)";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.7)";
     ctx.beginPath();
-    ctx.moveTo(px + 2, py + BLOCK_SIZE - 2);
-    ctx.lineTo(px + BLOCK_SIZE - 2, py + BLOCK_SIZE - 2);
-    ctx.lineTo(px + BLOCK_SIZE - 2, py + 2);
+    ctx.moveTo(px, py + BLOCK_SIZE);
+    ctx.lineTo(px + BLOCK_SIZE, py + BLOCK_SIZE);
+    ctx.lineTo(px + BLOCK_SIZE, py);
     ctx.stroke();
 
     ctx.restore();
 }
 
 function draw() {
-    ctx.fillStyle = "#030712";
+    ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (let r = 0; r < ROWS; r++) {
@@ -446,4 +440,68 @@ function triggerAdRevive() {
 
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            grid = Array.from({ length: ROWS }, () => Array(COLS
+            grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+            uiOverlay.innerHTML = "";
+            gameOver = false;
+            isPaused = false;
+            dropCounter = 0;
+            spawnPiece();
+        }
+    }, 1000);
+}
+
+// Keyboard controls
+document.addEventListener("keydown", event => {
+    if (event.code === "KeyP" || event.code === "Escape") {
+        togglePause();
+        return;
+    }
+    if (gameOver || isPaused) return;
+
+    if (event.code === "ArrowLeft" || event.code === "KeyA") playerMove(-1);
+    else if (event.code === "ArrowRight" || event.code === "KeyD") playerMove(1);
+    else if (event.code === "ArrowDown" || event.code === "KeyS") playerDrop();
+    else if (event.code === "ArrowUp" || event.code === "KeyW") playerRotate();
+});
+
+// Instant Mobile Touch Controls
+const btnLeft = document.getElementById("btnLeft");
+const btnRight = document.getElementById("btnRight");
+const btnRotate = document.getElementById("btnRotate");
+const btnDrop = document.getElementById("btnDrop");
+
+if (btnLeft) {
+    btnLeft.addEventListener("touchstart", (e) => { e.preventDefault(); playerMove(-1); });
+    btnLeft.addEventListener("click", () => playerMove(-1));
+}
+if (btnRight) {
+    btnRight.addEventListener("touchstart", (e) => { e.preventDefault(); playerMove(1); });
+    btnRight.addEventListener("click", () => playerMove(1));
+}
+if (btnRotate) {
+    btnRotate.addEventListener("touchstart", (e) => { e.preventDefault(); playerRotate(); });
+    btnRotate.addEventListener("click", () => playerRotate());
+}
+if (btnDrop) {
+    btnDrop.addEventListener("touchstart", (e) => { e.preventDefault(); playerDrop(); });
+    btnDrop.addEventListener("click", () => playerDrop());
+}
+
+function gameLoop(time = 0) {
+    const deltaTime = time - lastTime;
+    lastTime = time;
+
+    if (!gameOver && !isPaused) {
+        dropCounter += deltaTime;
+        if (dropCounter > dropInterval) {
+            playerDrop();
+        }
+    }
+
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+showStartScreen();
+updateUI();
+requestAnimationFrame(gameLoop);

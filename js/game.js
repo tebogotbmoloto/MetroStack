@@ -20,15 +20,20 @@ let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
-// Tetromino Shapes & Colors (Ultra-bright neon arcade)
+// Tetromino Shapes & Colors (more variation + brighter neon arcade palette)
 const SHAPES = [
-    { shape: [[1, 1, 1, 1]], color: "#6EF8FF" }, // I - Long Quantum
-    { shape: [[1, 1], [1, 1]], color: "#FFE75A" }, // O - Speaker Stack
-    { shape: [[0, 1, 0], [1, 1, 1]], color: "#FF78F0" }, // T - Rank Junction
-    { shape: [[1, 1, 0], [0, 1, 1]], color: "#FF5A85" }, // Z - Sharp Curve
-    { shape: [[0, 1, 1], [1, 1, 0]], color: "#7CFF9A" }, // S - Smooth Route
-    { shape: [[1, 0, 0], [1, 1, 1]], color: "#78D8FF" }, // L - Mini-bus L
-    { shape: [[0, 0, 1], [1, 1, 1]], color: "#FFB14A" }  // J - Mini-bus J
+    { shape: [[1, 1, 1, 1]], color: "#7AF9FF" }, // I - Metro Line
+    { shape: [[1, 1], [1, 1]], color: "#FFE76A" }, // O - Stoplight
+    { shape: [[0, 1, 0], [1, 1, 1]], color: "#FF6EEB" }, // T - Transit Tower
+    { shape: [[1, 1, 0], [0, 1, 1]], color: "#FF5D73" }, // Z - Express Rush
+    { shape: [[0, 1, 1], [1, 1, 0]], color: "#70FF9B" }, // S - Green Route
+    { shape: [[1, 0, 0], [1, 1, 1]], color: "#7CC9FF" }, // L - Mini-bus L
+    { shape: [[0, 0, 1], [1, 1, 1]], color: "#FFB347" }, // J - Night Route
+    { shape: [[1, 1, 1], [1, 1, 0]], color: "#C98BFF" }, // P - Platform Block
+    { shape: [[1, 1, 1], [1, 0, 1]], color: "#44F0D6" }, // X - Pulse Core
+    { shape: [[1, 0, 1], [1, 1, 1]], color: "#FF8A5B" }, // U - Station Curve
+    { shape: [[1, 1, 1], [0, 1, 0], [0, 1, 0]], color: "#FFFD78" }, // Vertical Beam
+    { shape: [[1, 1, 0], [1, 0, 1], [0, 1, 1]], color: "#8FF7FF" } // Hybrid Metro Node
 ];
 
 let player = {
@@ -93,7 +98,7 @@ function playGameOverSound() {
 
 function spawnPiece() {
     const rand = Math.floor(Math.random() * SHAPES.length);
-    player.matrix = SHAPES[rand].shape;
+    player.matrix = SHAPES[rand].shape.map(row => [...row]);
     player.color = SHAPES[rand].color;
     player.pos.y = 0;
     player.pos.x = Math.floor(COLS / 2) - Math.floor(player.matrix[0].length / 2);
@@ -172,28 +177,32 @@ function playerMove(dir) {
     }
 }
 
-function playerRotate() {
-    const prevX = player.pos.x;
-    let offset = 1;
+function rotateMatrix(matrix) {
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+    const rotated = Array.from({ length: cols }, () => Array(rows).fill(0));
 
-    const m = player.matrix;
-    for (let y = 0; y < m.length; ++y) {
-        for (let x = 0; x < y; ++x) {
-            [m[x][y], m[y][x]] = [m[y][x], m[x][y]];
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            rotated[x][rows - 1 - y] = matrix[y][x];
         }
     }
-    m.forEach(row => row.reverse());
 
+    return rotated;
+}
+
+function playerRotate() {
+    const prevX = player.pos.x;
+    const prevMatrix = player.matrix.map(row => [...row]);
+    const rotated = rotateMatrix(player.matrix);
+    player.matrix = rotated;
+
+    let kick = 0;
     while (checkCollision()) {
-        player.pos.x += offset;
-        offset = -(offset + (offset > 0 ? 1 : -1));
-        if (offset > m[0].length) {
-            m.forEach(row => row.reverse());
-            for (let y = 0; y < m.length; ++y) {
-                for (let x = 0; x < y; ++x) {
-                    [m[x][y], m[y][x]] = [m[y][x], m[x][y]];
-                }
-            }
+        player.pos.x += (kick === 0 ? 1 : kick);
+        kick = kick === 0 ? -1 : (kick > 0 ? -kick - 1 : -kick + 1);
+        if (Math.abs(kick) > 3) {
+            player.matrix = prevMatrix;
             player.pos.x = prevX;
             return;
         }
@@ -225,14 +234,16 @@ function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
     const topColor = color;
-    const sideColor = shadeColor(color, -38);
-    const faceColor = shadeColor(color, -70);
+    const sideColor = shadeColor(color, -36);
+    const faceColor = shadeColor(color, -62);
 
     ctx.save();
-    ctx.shadowBlur = 0;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 12;
     ctx.fillStyle = topColor;
     ctx.fillRect(px + 2, py + 2, BLOCK_SIZE - 4, BLOCK_SIZE - 4);
 
+    ctx.shadowBlur = 0;
     ctx.fillStyle = sideColor;
     ctx.fillRect(px + BLOCK_SIZE - 6, py + 4, 4, BLOCK_SIZE - 8);
     ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
@@ -240,17 +251,17 @@ function drawBlock(x, y, color) {
     ctx.fillStyle = faceColor;
     ctx.fillRect(px + 2, py + BLOCK_SIZE - 6, BLOCK_SIZE - 6, 4);
 
-    ctx.fillStyle = "rgba(255,255,255,0.42)";
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.fillRect(px + 5, py + 5, BLOCK_SIZE - 12, 6);
 
-    ctx.strokeStyle = "rgba(255,255,255,0.8)";
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
     ctx.lineWidth = 1.2;
     ctx.strokeRect(px + 2.5, py + 2.5, BLOCK_SIZE - 5, BLOCK_SIZE - 5);
     ctx.restore();
 }
 
 function draw() {
-    ctx.fillStyle = "#060d1b";
+    ctx.fillStyle = "#050d1c";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (let r = 0; r < ROWS; r++) {
@@ -296,7 +307,7 @@ function showStartScreen() {
 function showGameOverScreen() {
     uiOverlay.innerHTML = `
         <div style="text-align: center;">
-            <h2 style="color: #ff6b9a; font-size: 22px; margin-bottom: 15px;">ROUTE BLOCKED!</h2>
+            <h2 style="color: #ff6b9a; font-size: 22px; margin-bottom: 15px; text-shadow: 0 0 12px rgba(255,107,154,0.9);">ROUTE BLOCKED!</h2>
             <button class="menuBtn" id="restartBtn">TRY AGAIN</button>
         </div>
     `;

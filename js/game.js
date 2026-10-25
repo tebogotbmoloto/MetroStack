@@ -21,23 +21,24 @@ let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
-// High-saturation neon arcade palette
+// High-vibrancy arcade color theme mapping (matching your reference image gradients)
 const SHAPES = [
-    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Cyan
-    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFEE00" }, // Yellow
-    { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Magenta
-    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF1155" }, // Red
-    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00FF55" }, // Green
-    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#0088FF" }, // Blue
-    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF6600" }, // Orange
-    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#DD22FF" }, // Purple
-    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#9933FF" }  // Violet
+    { name: "I", shape: [[1, 1, 1, 1]], color1: "#00F0FF", color2: "#0077FF" }, // Cyan
+    { name: "O", shape: [[1, 1], [1, 1]], color1: "#FFEE00", color2: "#FF8800" }, // Gold/Yellow
+    { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color1: "#FF00FF", color2: "#8800FF" }, // Magenta
+    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color1: "#FF2244", color2: "#990011" }, // Red
+    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color1: "#00FF66", color2: "#009933" }, // Lime Green
+    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color1: "#3399FF", color2: "#0033CC" }, // Blue
+    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color1: "#FF7700", color2: "#CC3300" }, // Orange
+    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color1: "#EE44FF", color2: "#7700AA" }, // Purple
+    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color1: "#AA44FF", color2: "#440099" }  // Violet
 ];
 
 let player = {
     pos: { x: 0, y: 0 },
     matrix: null,
-    color: "#ffffff"
+    color1: "#00FFFF",
+    color2: "#0077FF"
 };
 
 const AudioCtor = window.AudioContext || window.webkitAudioContext;
@@ -104,7 +105,7 @@ function playAdJingle() {
 }
 
 function resetBoard() {
-    grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
     score = 0;
     lines = 0;
     level = 1;
@@ -134,7 +135,8 @@ function spawnPiece() {
     const nextShape = SHAPES[rand];
 
     player.matrix = nextShape.shape.map(row => row.slice());
-    player.color = nextShape.color;
+    player.color1 = nextShape.color1;
+    player.color2 = nextShape.color2;
     player.pos.y = 0;
     player.pos.x = Math.floor(COLS / 2) - Math.floor(player.matrix[0].length / 2);
 
@@ -157,7 +159,7 @@ function checkCollision() {
             const newY = player.pos.y + r;
 
             if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
-            if (newY >= 0 && grid[newY][newX] !== 0) return true;
+            if (newY >= 0 && grid[newY][newX] !== null) return true;
         }
     }
     return false;
@@ -172,7 +174,7 @@ function mergePiece() {
                 const y = player.pos.y + r;
 
                 if (y >= 0 && y < ROWS && x >= 0 && x < COLS) {
-                    grid[y][x] = player.color;
+                    grid[y][x] = { color1: player.color1, color2: player.color2 };
                 }
             }
         });
@@ -183,12 +185,11 @@ function clearLines() {
     let rowCount = 0;
 
     for (let r = ROWS - 1; r >= 0; r--) {
-        const fullRow = grid[r].every(cell => cell !== 0);
+        const fullRow = grid[r].every(cell => cell !== null);
         if (!fullRow) continue;
 
-        const removed = grid.splice(r, 1)[0];
-        removed.fill(0);
-        grid.unshift(removed);
+        grid.splice(r, 1);
+        grid.unshift(Array(COLS).fill(null));
         rowCount++;
         r++;
     }
@@ -266,43 +267,42 @@ function playerRotate() {
     playRotateSound();
 }
 
-// Solid opaque high-brightness arcade block renderer with crisp 3D borders
-function drawBlock(x, y, color) {
+// Exact reference-matching block renderer with rich gradient fill and 3D inner texture frame
+function drawBlock(x, y, color1, color2) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
 
     ctx.save();
-    
-    // Soft glowing halo
-    ctx.shadowBlur = 12;
-    ctx.shadowColor = color;
 
-    // Solid vivid base fill
-    ctx.fillStyle = color;
+    // 1. Rich vertical gradient background matching your reference image style
+    const grad = ctx.createLinearGradient(px, py, px, py + BLOCK_SIZE);
+    grad.addColorStop(0, color1);
+    grad.addColorStop(1, color2);
+    ctx.fillStyle = grad;
     ctx.fillRect(px, py, BLOCK_SIZE, BLOCK_SIZE);
 
-    // Inner bright core highlight for maximum intensity
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 8, BLOCK_SIZE - 8);
+    // 2. Checkerboard / Dot inner recessed texture frame
+    ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+    for (let i = 4; i < BLOCK_SIZE - 4; i += 4) {
+        for (let j = 4; j < BLOCK_SIZE - 4; j += 4) {
+            ctx.fillRect(px + i, py + j, 2, 2);
+        }
+    }
 
-    // Inner color fill to maintain rich saturation
-    ctx.fillStyle = color;
-    ctx.fillRect(px + 6, py + 6, BLOCK_SIZE - 12, BLOCK_SIZE - 12);
-
-    // Crisp 3D Bevel borders
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.95)";
-    ctx.lineWidth = 2.5;
+    // 3. Inner recessed bevel border (gives that exact 3D carved arcade button look)
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(px, py + BLOCK_SIZE);
-    ctx.lineTo(px, py);
-    ctx.lineTo(px + BLOCK_SIZE, py);
+    ctx.moveTo(px + 2, py + BLOCK_SIZE - 2);
+    ctx.lineTo(px + 2, py + 2);
+    ctx.lineTo(px + BLOCK_SIZE - 2, py + 2);
     ctx.stroke();
 
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.7)";
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.75)";
     ctx.beginPath();
-    ctx.moveTo(px, py + BLOCK_SIZE);
-    ctx.lineTo(px + BLOCK_SIZE, py + BLOCK_SIZE);
-    ctx.lineTo(px + BLOCK_SIZE, py);
+    ctx.moveTo(px + 2, py + BLOCK_SIZE - 2);
+    ctx.lineTo(px + BLOCK_SIZE - 2, py + BLOCK_SIZE - 2);
+    ctx.lineTo(px + BLOCK_SIZE - 2, py + 2);
     ctx.stroke();
 
     ctx.restore();
@@ -314,8 +314,8 @@ function draw() {
 
     for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
-            if (grid[r][c] !== 0) {
-                drawBlock(c, r, grid[r][c]);
+            if (grid[r][c] !== null) {
+                drawBlock(c, r, grid[r][c].color1, grid[r][c].color2);
             }
         }
     }
@@ -324,7 +324,7 @@ function draw() {
         player.matrix.forEach((row, r) => {
             row.forEach((value, c) => {
                 if (value !== 0) {
-                    drawBlock(player.pos.x + c, player.pos.y + r, player.color);
+                    drawBlock(player.pos.x + c, player.pos.y + r, player.color1, player.color2);
                 }
             });
         });
@@ -372,7 +372,7 @@ function togglePause() {
     if (isPaused) {
         uiOverlay.innerHTML = `
             <div class="revivedPanel">
-                <h2 style="color: var(--cyan); margin-bottom: 12px; font-size: 20px;">GAME PAUSED</h2>
+                <h2 style="color: #00ffff; margin-bottom: 12px; font-size: 20px;">GAME PAUSED</h2>
                 <div class="reviveActions">
                     <button class="menuBtn" id="resumeBtn">RESUME</button>
                     <button class="menuBtn secondaryBtn" id="quitBtn">MAIN MENU</button>
@@ -395,7 +395,7 @@ function togglePause() {
 function showGameOverScreen() {
     uiOverlay.innerHTML = `
         <div class="revivedPanel">
-            <h2 style="color: var(--pink); margin-bottom: 12px; font-size: 20px;">ROUTE BLOCKED!</h2>
+            <h2 style="color: #ff0055; margin-bottom: 12px; font-size: 20px;">ROUTE BLOCKED!</h2>
             <div class="reviveActions">
                 <button class="menuBtn" id="reviveBtn">🎬 WATCH AD TO REVIVE</button>
                 <button class="menuBtn secondaryBtn" id="restartBtn">TRY AGAIN</button>
@@ -417,12 +417,12 @@ function showGameOverScreen() {
 function triggerAdRevive() {
     uiOverlay.innerHTML = `
         <div class="revivedPanel">
-            <h2 style="color: var(--cyan); font-size: 16px; margin-bottom: 6px;">SPONSORED PARTNER AD</h2>
+            <h2 style="color: #00ffff; font-size: 16px; margin-bottom: 6px;">SPONSORED PARTNER AD</h2>
             <p class="statLabel" style="margin-bottom: 12px;">Resetting board on Level ${level}...</p>
             <div class="adBar">
                 <div class="adProgress" id="adProgress" style="transition: width 10s linear;"></div>
             </div>
-            <div style="font-size: 28px; font-weight: bold; color: var(--yellow); margin-top: 10px;" id="adTimer">10</div>
+            <div style="font-size: 28px; font-weight: bold; color: #ffff00; margin-top: 10px;" id="adTimer">10</div>
         </div>
     `;
 
@@ -440,7 +440,7 @@ function triggerAdRevive() {
 
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+            grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
             uiOverlay.innerHTML = "";
             gameOver = false;
             isPaused = false;

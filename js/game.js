@@ -21,16 +21,17 @@ let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
+// Maximum brightness & saturation neon colors
 const SHAPES = [
-    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Ultra-Bright Neon Cyan
-    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFFF00" }, // Pure Electric Yellow
-    { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Neon Magenta
-    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF2A55" }, // Vivid Neon Red
-    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00FF66" }, // Neon Lime Green
-    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#00A2FF" }, // Bright Sky Blue
-    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF7700" }, // Vibrant Neon Orange
-    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#EE33FF" }, // Bright Orchid
-    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#9955FF" }  // Electric Purple
+    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Cyan Neon
+    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFFF00" }, // Bright Yellow
+    { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Magenta Neon
+    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF0055" }, // Hot Neon Red
+    { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00FF55" }, // Neon Green
+    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#0088FF" }, // Electric Blue
+    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF6600" }, // Bright Orange
+    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#CC00FF" }, // Vivid Purple
+    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#7700FF" }  // Deep Neon Violet
 ];
 
 let player = {
@@ -258,48 +259,29 @@ function playerRotate() {
     playRotateSound();
 }
 
-function hexToRgb(hex) {
-    const clean = hex.replace("#", "");
-    const normalized = clean.length === 3
-        ? clean.split("").map(ch => ch + ch).join("")
-        : clean;
-
-    const num = parseInt(normalized, 16);
-    return {
-        r: (num >> 16) & 255,
-        g: (num >> 8) & 255,
-        b: num & 255
-    };
-}
-
-function shadeColor(hex, amount) {
-    const { r, g, b } = hexToRgb(hex);
-    const adjust = (channel) => Math.max(0, Math.min(255, channel + amount));
-    return `rgb(${adjust(r)}, ${adjust(g)}, ${adjust(b)})`;
-}
-
 function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
-    
-    // High-luminance rendering so blocks look glowing and bright
+
     ctx.save();
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = color;
+
     ctx.fillStyle = color;
     ctx.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 
-    // Glossy top-left highlight
-    ctx.fillStyle = "rgba(255,255,255,0.8)";
-    ctx.fillRect(px + 3, py + 3, BLOCK_SIZE - 10, 6);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
+    ctx.fillRect(px + 3, py + 3, BLOCK_SIZE - 12, 5);
 
-    // Bright outer border
     ctx.strokeStyle = "#FFFFFF";
     ctx.lineWidth = 1.5;
     ctx.strokeRect(px + 1.5, py + 1.5, BLOCK_SIZE - 3, BLOCK_SIZE - 3);
+    
     ctx.restore();
 }
 
 function draw() {
-    ctx.fillStyle = "#030712";
+    ctx.fillStyle = "#020611";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (let r = 0; r < ROWS; r++) {

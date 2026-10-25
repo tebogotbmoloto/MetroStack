@@ -21,17 +21,17 @@ let dropInterval = 500;
 let dropCounter = 0;
 let lastTime = 0;
 
-// Your original bright neon color palette
+// High-vibrancy arcade color palette
 const SHAPES = [
-    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Ultra-Bright Cyan
-    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFFF00" }, // Pure Electric Yellow
-    { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Neon Magenta
-    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF2A55" }, // Vivid Neon Red
+    { name: "I", shape: [[1, 1, 1, 1]], color: "#00FFFF" }, // Cyan
+    { name: "O", shape: [[1, 1], [1, 1]], color: "#FFD700" }, // Gold Yellow
+    { name: "T", shape: [[0, 1, 0], [1, 1, 1]], color: "#FF00FF" }, // Magenta
+    { name: "Z", shape: [[1, 1, 0], [0, 1, 1]], color: "#FF2A55" }, // Red
     { name: "S", shape: [[0, 1, 1], [1, 1, 0]], color: "#00FF66" }, // Neon Lime Green
-    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#00A2FF" }, // Bright Sky Blue
-    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF7700" }, // Vibrant Neon Orange
-    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#EE33FF" }, // Bright Orchid
-    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#9955FF" }  // Electric Purple
+    { name: "L", shape: [[1, 0, 0], [1, 1, 1]], color: "#00A2FF" }, // Electric Blue
+    { name: "J", shape: [[0, 0, 1], [1, 1, 1]], color: "#FF7700" }, // Bright Orange
+    { name: "P", shape: [[1, 1, 1], [1, 0, 1]], color: "#EE33FF" }, // Purple
+    { name: "R", shape: [[1, 1], [1, 0], [1, 1]], color: "#9955FF" }  // Violet
 ];
 
 let player = {
@@ -113,6 +113,13 @@ function resetBoard() {
     lastTime = 0;
     updateUI();
 }
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (typeof showStartScreen === 'function') showStartScreen();
+});
 
 function startNewGame() {
     uiOverlay.innerHTML = "";
@@ -259,28 +266,46 @@ function playerRotate() {
     playRotateSound();
 }
 
+// Textured 3D Beveled Arcade Block Rendering (matching your reference style)
 function drawBlock(x, y, color) {
     const px = x * BLOCK_SIZE;
     const py = y * BLOCK_SIZE;
 
     ctx.save();
-    // High-intensity neon glow aura for maximum mobile visibility
-    ctx.shadowBlur = 15;
+    
+    // Outer luminous glow
+    ctx.shadowBlur = 12;
     ctx.shadowColor = color;
 
-    // Outer rich neon block fill
+    // Solid base fill
     ctx.fillStyle = color;
     ctx.fillRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
 
-    // Solid white inner core to cut through phone screen auto-dimming
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(px + 4, py + 4, BLOCK_SIZE - 8, BLOCK_SIZE - 8);
+    // Inner dotted/checkered arcade texture
+    ctx.fillStyle = "rgba(0, 0, 0, 0.28)";
+    for (let i = 4; i < BLOCK_SIZE - 4; i += 4) {
+        for (let j = 4; j < BLOCK_SIZE - 4; j += 4) {
+            ctx.fillRect(px + i, py + j, 2, 2);
+        }
+    }
 
-    // Crisp vivid outer border
-    ctx.strokeStyle = color;
+    // Top-left glossy 3D bevel highlight
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
     ctx.lineWidth = 2;
-    ctx.strokeRect(px + 1, py + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
-    
+    ctx.beginPath();
+    ctx.moveTo(px + 2, py + BLOCK_SIZE - 2);
+    ctx.lineTo(px + 2, py + 2);
+    ctx.lineTo(px + BLOCK_SIZE - 2, py + 2);
+    ctx.stroke();
+
+    // Bottom-right shadow bevel
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.65)";
+    ctx.beginPath();
+    ctx.moveTo(px + 2, py + BLOCK_SIZE - 2);
+    ctx.lineTo(px + BLOCK_SIZE - 2, py + BLOCK_SIZE - 2);
+    ctx.lineTo(px + BLOCK_SIZE - 2, py + 2);
+    ctx.stroke();
+
     ctx.restore();
 }
 
@@ -314,9 +339,12 @@ function updateUI() {
 }
 
 function showStartScreen() {
+    let installBtnHTML = deferredPrompt ? `<button class="menuBtn secondaryBtn" id="installAppBtn" style="margin-top: 10px;">📱 INSTALL APP</button>` : '';
+
     uiOverlay.innerHTML = `
         <div class="revivedPanel">
             <button class="menuBtn" id="startBtn">START STACKING</button>
+            ${installBtnHTML}
         </div>
     `;
 
@@ -325,11 +353,21 @@ function showStartScreen() {
         ensureAudio();
         startNewGame();
     });
+
+    const installAppBtn = document.getElementById("installAppBtn");
+    if (installAppBtn) {
+        installAppBtn.addEventListener("click", async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') deferredPrompt = null;
+            installAppBtn.style.display = 'none';
+        });
+    }
 }
 
 function togglePause() {
     if (gameOver) return;
-
     isPaused = !isPaused;
 
     if (isPaused) {
@@ -342,11 +380,7 @@ function togglePause() {
                 </div>
             </div>
         `;
-
-        document.getElementById("resumeBtn").addEventListener("click", () => {
-            togglePause();
-        });
-
+        document.getElementById("resumeBtn").addEventListener("click", () => togglePause());
         document.getElementById("quitBtn").addEventListener("click", () => {
             isPaused = false;
             gameOver = true;
@@ -370,14 +404,12 @@ function showGameOverScreen() {
         </div>
     `;
 
-    const reviveBtn = document.getElementById("reviveBtn");
-    reviveBtn.addEventListener("click", () => {
+    document.getElementById("reviveBtn").addEventListener("click", () => {
         ensureAudio();
         triggerAdRevive();
     });
 
-    const restartBtn = document.getElementById("restartBtn");
-    restartBtn.addEventListener("click", () => {
+    document.getElementById("restartBtn").addEventListener("click", () => {
         ensureAudio();
         startNewGame();
     });
@@ -396,7 +428,6 @@ function triggerAdRevive() {
     `;
 
     playAdJingle();
-    
     setTimeout(() => {
         const bar = document.getElementById("adProgress");
         if (bar) bar.style.width = "0%";
@@ -410,10 +441,7 @@ function triggerAdRevive() {
 
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            
-            // Full board reset from bottom, keeping current level and score intact!
             grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-
             uiOverlay.innerHTML = "";
             gameOver = false;
             isPaused = false;
@@ -423,24 +451,42 @@ function triggerAdRevive() {
     }, 1000);
 }
 
+// Keyboard controls
 document.addEventListener("keydown", event => {
     if (event.code === "KeyP" || event.code === "Escape") {
         togglePause();
         return;
     }
-
     if (gameOver || isPaused) return;
 
-    if (event.code === "ArrowLeft" || event.code === "KeyA") {
-        playerMove(-1);
-    } else if (event.code === "ArrowRight" || event.code === "KeyD") {
-        playerMove(1);
-    } else if (event.code === "ArrowDown" || event.code === "KeyS") {
-        playerDrop();
-    } else if (event.code === "ArrowUp" || event.code === "KeyW") {
-        playerRotate();
-    }
+    if (event.code === "ArrowLeft" || event.code === "KeyA") playerMove(-1);
+    else if (event.code === "ArrowRight" || event.code === "KeyD") playerMove(1);
+    else if (event.code === "ArrowDown" || event.code === "KeyS") playerDrop();
+    else if (event.code === "ArrowUp" || event.code === "KeyW") playerRotate();
 });
+
+// Instant Mobile Touch Controls
+const btnLeft = document.getElementById("btnLeft");
+const btnRight = document.getElementById("btnRight");
+const btnRotate = document.getElementById("btnRotate");
+const btnDrop = document.getElementById("btnDrop");
+
+if (btnLeft) {
+    btnLeft.addEventListener("touchstart", (e) => { e.preventDefault(); playerMove(-1); });
+    btnLeft.addEventListener("click", () => playerMove(-1));
+}
+if (btnRight) {
+    btnRight.addEventListener("touchstart", (e) => { e.preventDefault(); playerMove(1); });
+    btnRight.addEventListener("click", () => playerMove(1));
+}
+if (btnRotate) {
+    btnRotate.addEventListener("touchstart", (e) => { e.preventDefault(); playerRotate(); });
+    btnRotate.addEventListener("click", () => playerRotate());
+}
+if (btnDrop) {
+    btnDrop.addEventListener("touchstart", (e) => { e.preventDefault(); playerDrop(); });
+    btnDrop.addEventListener("click", () => playerDrop());
+}
 
 function gameLoop(time = 0) {
     const deltaTime = time - lastTime;

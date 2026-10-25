@@ -1,5 +1,5 @@
 body {
-    background: #020611;
+    background: #010409;
     color: #ffffff;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     display: flex;
@@ -21,7 +21,7 @@ body {
     width: 100%;
     height: 100%;
     max-width: 450px;
-    background: #030712;
+    background: #010409;
     padding: 10px;
     box-sizing: border-box;
 }
@@ -37,8 +37,8 @@ body {
 }
 
 .panel {
-    background: rgba(13, 22, 41, 0.9);
-    border: 1px solid rgba(130, 251, 255, 0.6);
+    background: #0d1629;
+    border: 2px solid #00ffff;
     padding: 6px 8px;
     border-radius: 8px;
     flex: 1;
@@ -63,13 +63,13 @@ body {
 
 #canvasWrapper {
     position: relative;
-    border: 3px solid rgba(130, 251, 255, 0.9);
+    border: 3px solid #00ffff;
     border-radius: 10px;
     overflow: hidden;
     background: #000000;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
 }
 
-/* Forces sharp, crisp pixels without mobile blurring */
 canvas {
     display: block;
     background: #000000;
@@ -90,19 +90,18 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(3, 7, 18, 0.85);
+    background: rgba(1, 4, 9, 0.9);
     z-index: 10;
 }
 
 .revivedPanel {
     background: #0d1629;
-    border: 2px solid #82fbff;
+    border: 2px solid #00ffff;
     padding: 20px;
     border-radius: 12px;
     text-align: center;
     width: 80%;
     max-width: 260px;
-    box-shadow: 0 0 20px rgba(130, 251, 255, 0.4);
 }
 
 .menuBtn {
@@ -115,18 +114,11 @@ canvas {
     border-radius: 8px;
     cursor: pointer;
     width: 100%;
-    box-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
-    transition: transform 0.1s ease;
-}
-
-.menuBtn:active {
-    transform: scale(0.96);
 }
 
 .secondaryBtn {
     background: linear-gradient(135deg, #ff007f, #7700ff);
     color: #ffffff;
-    box-shadow: 0 0 12px rgba(255, 0, 127, 0.5);
     margin-top: 10px;
 }
 
@@ -154,8 +146,7 @@ canvas {
 #touchControls button {
     background: linear-gradient(135deg, #38bdf8, #818cf8);
     color: #030712;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 2px solid #ffffff;
     font-weight: bold;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }

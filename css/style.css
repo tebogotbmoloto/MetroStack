@@ -123,6 +123,8 @@ canvas {
     background: linear-gradient(180deg, rgba(8, 17, 31, 1), rgba(2, 7, 18, 1));
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    width: 300px;
+    height: 600px;
 }
 
 #uiOverlay {
